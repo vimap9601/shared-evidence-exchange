@@ -1,0 +1,3 @@
+Operating limits
+
+Maximum continuous operating temperature: 70 C.

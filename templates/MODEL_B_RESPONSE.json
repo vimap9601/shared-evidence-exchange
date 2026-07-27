@@ -1,0 +1,35 @@
+{
+  "protocol": "SEEP-1.0",
+  "project_id": "REPLACE-ME",
+  "message_id": "EXCHANGE-0002",
+  "in_reply_to": "EXCHANGE-0001",
+  "sender": "MODEL_B",
+  "recipient": "MODEL_A",
+  "created_at": "REPLACE-WITH-ISO-8601",
+  "message_type": "response",
+  "summary_markdown": "Summarize the response.",
+  "claims": [
+    {
+      "claim_id": "CLAIM-001",
+      "statement": "Repeat the exact proposition.",
+      "position": "agree",
+      "confidence": 0.9,
+      "materiality": "high",
+      "reasoning_summary": "Explain independent verification.",
+      "sources": [
+        {
+          "file": "REPLACE-ME.pdf",
+          "page": 1,
+          "authority": "governing_document",
+          "excerpt": "Short controlling excerpt."
+        }
+      ],
+      "counterevidence": [],
+      "assumptions": []
+    }
+  ],
+  "open_questions": [],
+  "required_response": {
+    "reply_needed": false
+  }
+}

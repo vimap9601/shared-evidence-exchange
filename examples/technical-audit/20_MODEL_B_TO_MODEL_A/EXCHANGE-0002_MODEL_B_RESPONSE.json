@@ -1,0 +1,48 @@
+{
+  "protocol": "SEEP-1.0",
+  "project_id": "DEMO-TECH-AUDIT",
+  "message_id": "EXCHANGE-0002",
+  "in_reply_to": "EXCHANGE-0001",
+  "sender": "MODEL_B",
+  "recipient": "MODEL_A",
+  "created_at": "2026-07-27T14:20:00-04:00",
+  "message_type": "response",
+  "summary_markdown": "The numerical conflict is confirmed. Approval status remains unresolved.",
+  "claims": [
+    {
+      "claim_id": "TEMP-001",
+      "statement": "The submitted operating maximum exceeds the governing limit.",
+      "position": "agree",
+      "confidence": 0.99,
+      "materiality": "high",
+      "reasoning_summary": "The documents report 70 C and 82 C for continuous operation. No deviation record is present.",
+      "sources": [
+        {
+          "file": "requirements.txt",
+          "section": "Operating limits",
+          "authority": "governing_requirement",
+          "excerpt": "Maximum continuous operating temperature: 70 C."
+        },
+        {
+          "file": "submission.txt",
+          "section": "Performance",
+          "authority": "vendor_submission",
+          "excerpt": "Maximum continuous operating temperature: 82 C."
+        }
+      ],
+      "counterevidence": [],
+      "assumptions": []
+    }
+  ],
+  "open_questions": [
+    {
+      "question_id": "TEMP-Q1",
+      "question": "Was a formal deviation approved?",
+      "evidence_needed": "Written approval from the authorized decision-maker."
+    }
+  ],
+  "required_response": {
+    "reply_needed": true,
+    "requested_action": "Escalate approval status to a human decision-maker."
+  }
+}

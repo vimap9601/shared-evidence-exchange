@@ -1,0 +1,12 @@
+{
+  "protocol": "SEEP-1.0",
+  "project_id": "REPLACE-ME",
+  "state_version": 1,
+  "last_message_id": null,
+  "agreed_claims": [],
+  "disputed_claims": [],
+  "unresolved_questions": [],
+  "required_human_decisions": [],
+  "next_actor": "MODEL_A",
+  "status": "setup"
+}

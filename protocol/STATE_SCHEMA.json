@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SEEP Project State",
+  "type": "object",
+  "required": [
+    "protocol",
+    "project_id",
+    "state_version",
+    "last_message_id",
+    "agreed_claims",
+    "disputed_claims",
+    "unresolved_questions",
+    "required_human_decisions",
+    "next_actor",
+    "status"
+  ],
+  "properties": {
+    "protocol": {
+      "const": "SEEP-1.0"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "state_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "last_message_id": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^EXCHANGE-[0-9]{4}[A-Z]?$"
+        }
+      ]
+    },
+    "agreed_claims": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "disputed_claims": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "unresolved_questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "required_human_decisions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "next_actor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "setup",
+        "peer_review_open",
+        "awaiting_model_a",
+        "awaiting_model_b",
+        "human_decision_required",
+        "complete"
+      ]
+    }
+  }
+}

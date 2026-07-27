@@ -1,0 +1,44 @@
+{
+  "protocol": "SEEP-1.0",
+  "project_id": "REPLACE-ME",
+  "message_id": "EXCHANGE-0001",
+  "in_reply_to": null,
+  "sender": "MODEL_A",
+  "recipient": "MODEL_B",
+  "created_at": "REPLACE-WITH-ISO-8601",
+  "message_type": "audit_challenge",
+  "summary_markdown": "Summarize the material issue and requested review.",
+  "claims": [
+    {
+      "claim_id": "CLAIM-001",
+      "statement": "State one precise proposition.",
+      "position": "supported",
+      "confidence": 0.8,
+      "materiality": "high",
+      "reasoning_summary": "Explain the evidence path concisely.",
+      "sources": [
+        {
+          "file": "REPLACE-ME.pdf",
+          "page": 1,
+          "authority": "governing_document",
+          "excerpt": "Short controlling excerpt."
+        }
+      ],
+      "counterevidence": [],
+      "assumptions": [],
+      "requested_verdict": [
+        "agree",
+        "disagree",
+        "partially_agree",
+        "unresolved"
+      ]
+    }
+  ],
+  "open_questions": [],
+  "required_response": {
+    "verdict_per_claim": true,
+    "primary_source_basis": true,
+    "counterevidence_required": true,
+    "remaining_uncertainty_required": true
+  }
+}
