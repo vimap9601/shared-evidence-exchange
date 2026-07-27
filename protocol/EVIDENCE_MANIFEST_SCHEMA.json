@@ -1,12 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/seep/evidence-manifest.schema.json",
   "title": "SEEP Evidence Manifest",
   "type": "object",
+  "additionalProperties": true,
   "required": [
     "protocol",
     "project_id",
     "generated_at",
     "root",
+    "inventory_complete",
+    "directories",
+    "summary",
+    "coverage_controls",
     "files"
   ],
   "properties": {
@@ -14,7 +20,8 @@
       "const": "SEEP-1.0"
     },
     "project_id": {
-      "type": "string"
+      "type": "string",
+      "minLength": 1
     },
     "generated_at": {
       "type": "string",
@@ -23,17 +30,151 @@
     "root": {
       "type": "string"
     },
+    "inventory_complete": {
+      "type": "boolean"
+    },
+    "directories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "files_total",
+        "bytes_total",
+        "files_by_extension",
+        "files_by_directory",
+        "duplicate_groups",
+        "archive_files"
+      ],
+      "properties": {
+        "files_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bytes_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "files_by_extension": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "files_by_directory": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "duplicate_groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "sha256",
+              "paths"
+            ],
+            "properties": {
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-fA-F0-9]{64}$"
+              },
+              "paths": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 2
+              }
+            }
+          }
+        },
+        "archive_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "coverage_controls": {
+      "type": "object",
+      "required": [
+        "recursive_inventory_complete",
+        "relevant_filename_variants_searched",
+        "archives_and_nested_containers_inspected",
+        "connector_limitations_documented",
+        "known_connector_limitations",
+        "folders_not_recursively_reviewed"
+      ],
+      "properties": {
+        "recursive_inventory_complete": {
+          "type": "boolean"
+        },
+        "relevant_filename_variants_searched": {
+          "type": "boolean"
+        },
+        "archives_and_nested_containers_inspected": {
+          "type": "boolean"
+        },
+        "connector_limitations_documented": {
+          "type": "boolean"
+        },
+        "known_connector_limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "folders_not_recursively_reviewed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "files": {
       "type": "array",
       "items": {
         "type": "object",
+        "additionalProperties": true,
         "required": [
           "path",
+          "directory",
+          "extension",
           "size_bytes",
-          "sha256"
+          "sha256",
+          "modified_at",
+          "is_archive",
+          "archive_inspected",
+          "review_status",
+          "opened",
+          "parsed",
+          "visually_inspected",
+          "assigned_reviewer",
+          "reviewed_by",
+          "authority",
+          "source_class",
+          "duplicate_of",
+          "notes"
         ],
         "properties": {
           "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "directory": {
+            "type": "string"
+          },
+          "extension": {
             "type": "string"
           },
           "size_bytes": {
@@ -45,13 +186,66 @@
             "pattern": "^[a-fA-F0-9]{64}$"
           },
           "modified_at": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
+          },
+          "is_archive": {
+            "type": "boolean"
+          },
+          "archive_inspected": {
+            "type": "boolean"
+          },
+          "review_status": {
+            "enum": [
+              "unreviewed",
+              "opened",
+              "parsed",
+              "visually_inspected",
+              "reviewed",
+              "unsupported"
+            ]
+          },
+          "opened": {
+            "type": "boolean"
+          },
+          "parsed": {
+            "type": "boolean"
+          },
+          "visually_inspected": {
+            "type": "boolean"
+          },
+          "reviewed_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "authority": {
             "type": "string"
           },
+          "source_class": {
+            "enum": [
+              "primary",
+              "secondary",
+              "generated",
+              "historical",
+              "unclassified"
+            ]
+          },
+          "duplicate_of": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "notes": {
             "type": "string"
+          },
+          "assigned_reviewer": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       }

@@ -1,0 +1,21 @@
+{
+  "protocol": "SEEP-1.0",
+  "project_id": "DEMO-TECH-AUDIT",
+  "state_version": 2,
+  "last_message_id": "EXCHANGE-0003",
+  "agreed_claims": [
+    "TEMP-001"
+  ],
+  "disputed_claims": [],
+  "unresolved_questions": [
+    "TEMP-Q1"
+  ],
+  "required_human_decisions": [
+    "Approve, reject, or require revision of the 82 C submission."
+  ],
+  "next_actor": null,
+  "status": "human_decision_required",
+  "reopened_claims": [],
+  "evidence_manifest": "01_GOVERNING_STATE/EVIDENCE_MANIFEST.json",
+  "evidence_coverage_status": "complete"
+}

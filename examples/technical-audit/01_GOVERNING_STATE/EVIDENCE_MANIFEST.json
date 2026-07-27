@@ -1,0 +1,76 @@
+{
+  "protocol": "SEEP-1.0",
+  "project_id": "DEMO-TECH-AUDIT",
+  "generated_at": "2026-07-27T23:16:40.309294+00:00",
+  "root": "50_PRIMARY_EVIDENCE",
+  "inventory_complete": true,
+  "directories": [],
+  "summary": {
+    "files_total": 2,
+    "bytes_total": 127,
+    "files_by_extension": {
+      ".txt": 2
+    },
+    "files_by_directory": {
+      "[root]": 2
+    },
+    "duplicate_groups": [],
+    "archive_files": []
+  },
+  "coverage_controls": {
+    "recursive_inventory_complete": true,
+    "relevant_filename_variants_searched": true,
+    "archives_and_nested_containers_inspected": true,
+    "connector_limitations_documented": true,
+    "known_connector_limitations": [],
+    "folders_not_recursively_reviewed": []
+  },
+  "files": [
+    {
+      "path": "requirements.txt",
+      "directory": "",
+      "extension": ".txt",
+      "size_bytes": 66,
+      "sha256": "68892151e669d40bf460beab3e18c5ef1b9bd6a6f87bdd2b1564b7021ed3d3bb",
+      "modified_at": "2026-07-27T21:57:23+00:00",
+      "is_archive": false,
+      "archive_inspected": true,
+      "review_status": "reviewed",
+      "opened": true,
+      "parsed": true,
+      "visually_inspected": false,
+      "reviewed_by": [
+        "MODEL_A",
+        "MODEL_B"
+      ],
+      "authority": "governing_requirement",
+      "source_class": "primary",
+      "duplicate_of": null,
+      "notes": "",
+      "assigned_reviewer": "MODEL_A"
+    },
+    {
+      "path": "submission.txt",
+      "directory": "",
+      "extension": ".txt",
+      "size_bytes": 61,
+      "sha256": "cbf21805d7f324bb3fa9a5aa29dd3991d4f9841ebd5b8f729802632f3cdfcac1",
+      "modified_at": "2026-07-27T21:57:23+00:00",
+      "is_archive": false,
+      "archive_inspected": true,
+      "review_status": "reviewed",
+      "opened": true,
+      "parsed": true,
+      "visually_inspected": false,
+      "reviewed_by": [
+        "MODEL_A",
+        "MODEL_B"
+      ],
+      "authority": "vendor_submission",
+      "source_class": "primary",
+      "duplicate_of": null,
+      "notes": "",
+      "assigned_reviewer": "MODEL_A"
+    }
+  ]
+}

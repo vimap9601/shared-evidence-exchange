@@ -14,6 +14,7 @@
     "created_at",
     "message_type",
     "summary_markdown",
+    "evidence_coverage",
     "claims",
     "open_questions",
     "required_response"
@@ -80,6 +81,9 @@
     },
     "required_response": {
       "type": "object"
+    },
+    "evidence_coverage": {
+      "$ref": "#/$defs/evidence_coverage"
     }
   },
   "$defs": {
@@ -185,6 +189,52 @@
           "items": {
             "type": "string"
           }
+        },
+        "evidence_basis": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "measured",
+              "manufacturer_calculated",
+              "independently_modeled",
+              "inferred",
+              "assumed",
+              "document_reported"
+            ]
+          }
+        },
+        "status_dimensions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "submission": {
+              "type": "string"
+            },
+            "approval": {
+              "type": "string"
+            },
+            "compliance": {
+              "type": "string"
+            },
+            "execution": {
+              "type": "string"
+            }
+          }
+        },
+        "supersedes_claim_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "reopens_claim_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
         }
       }
     },
@@ -204,6 +254,79 @@
         },
         "evidence_needed": {
           "type": "string"
+        }
+      }
+    },
+    "evidence_coverage": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "manifest_file",
+        "inventory_complete",
+        "files_total",
+        "files_opened",
+        "files_parsed",
+        "files_visually_inspected",
+        "files_not_opened",
+        "folders_not_recursively_reviewed",
+        "unsupported_file_types",
+        "archives_not_inspected",
+        "known_connector_limitations",
+        "missing_claim_gate_satisfied"
+      ],
+      "properties": {
+        "manifest_file": {
+          "type": "string"
+        },
+        "inventory_complete": {
+          "type": "boolean"
+        },
+        "files_total": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "files_opened": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "files_parsed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "files_visually_inspected": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "files_not_opened": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "folders_not_recursively_reviewed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unsupported_file_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "archives_not_inspected": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "known_connector_limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "missing_claim_gate_satisfied": {
+          "type": "boolean"
         }
       }
     }

@@ -1,6 +1,6 @@
 PYTHON ?= python
 
-.PHONY: test demo validate
+.PHONY: test demo validate coverage
 
 test:
 	$(PYTHON) -m unittest discover -s tests -v
@@ -10,3 +10,6 @@ demo:
 
 validate:
 	$(PYTHON) scripts/validate_exchange.py ./examples/technical-audit
+
+coverage:
+	$(PYTHON) scripts/check_evidence_coverage.py ./examples/technical-audit/01_GOVERNING_STATE/EVIDENCE_MANIFEST.json

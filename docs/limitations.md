@@ -9,3 +9,6 @@
 - Context snapshots may preserve previous errors.
 - Automated brokers can incur substantial API costs.
 - Human review remains necessary for consequential decisions.
+
+- Both models can miss the same folder or unsupported file type and reinforce a shared error.
+- A recursive manifest proves inventory, not substantive review; review-status fields still require honest updates.

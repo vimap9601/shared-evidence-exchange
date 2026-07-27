@@ -3,5 +3,23 @@
   "project_id": "REPLACE-ME",
   "generated_at": "REPLACE-WITH-ISO-8601",
   "root": "50_PRIMARY_EVIDENCE",
+  "inventory_complete": false,
+  "directories": [],
+  "summary": {
+    "files_total": 0,
+    "bytes_total": 0,
+    "files_by_extension": {},
+    "files_by_directory": {},
+    "duplicate_groups": [],
+    "archive_files": []
+  },
+  "coverage_controls": {
+    "recursive_inventory_complete": false,
+    "relevant_filename_variants_searched": false,
+    "archives_and_nested_containers_inspected": false,
+    "connector_limitations_documented": false,
+    "known_connector_limitations": [],
+    "folders_not_recursively_reviewed": []
+  },
   "files": []
 }

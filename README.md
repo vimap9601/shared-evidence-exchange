@@ -1,62 +1,116 @@
 # Shared Evidence Exchange Protocol
 
-**A lightweight, provider-independent method for letting multiple AI models review the same evidence, challenge each other, and leave an auditable record.**
+[![CI](https://github.com/Ctrl-Alt-Karma/shared-evidence-exchange/actions/workflows/ci.yml/badge.svg)](https://github.com/Ctrl-Alt-Karma/shared-evidence-exchange/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](pyproject.toml)
+[![Status: Alpha](https://img.shields.io/badge/status-alpha-orange.svg)](CHANGELOG.md)
 
-SEEP turns an ordinary shared folder, such as Google Drive, OneDrive, Dropbox, SharePoint, or a Git repository, into a structured message bus for AI peer review.
+**An append-only, provider-independent protocol for evidence-grounded peer review between multiple AI models.**
 
-Instead of copying prose between chats, each model reads the same protocol and evidence, writes a new numbered response, and never overwrites earlier messages. The result is closer to a disciplined review team maintaining a case file than two chatbots playing telephone.
+SEEP turns an ordinary shared folder, such as Google Drive, OneDrive, Dropbox, SharePoint, or a Git repository, into a durable exchange layer for AI collaboration.
 
-> Status: early public starter kit, version 0.1.0.
+Instead of copying answers between chats, each model reads the same evidence, writes a numbered response, and leaves the previous record untouched. The result is inspectable, challengeable, restartable, and much less vulnerable to context drift.
 
-## Why use it?
+> **Project status:** public alpha. The protocol and starter tools work today, but interfaces and schemas may evolve before version 1.0.
 
-Ordinary multi-model workflows lose information because a human manually summarizes and relays each answer. SEEP externalizes the important state:
+## The 30-second version
+
+1. Put the governing documents and evidence in a shared folder.
+2. Model A writes a structured challenge as `EXCHANGE-0001`.
+3. Model B independently checks the evidence and writes `EXCHANGE-0002`.
+4. The models continue with numbered, append-only files.
+5. Every message reports what evidence was actually opened, parsed, and visually inspected.
+6. The exchange ends with consensus, a documented deadlock, or a clearly assigned human decision.
+
+The human may still announce that a new file exists, but no longer has to summarize or relay the actual argument. Before the debate begins, SEEP recursively inventories the evidence so both models cannot confidently overlook the same folder.
+
+## Why this exists
+
+Cross-model review is useful, but ordinary copy-paste collaboration behaves like a telephone game. Citations disappear, caveats shrink, context windows fill up, and one model cannot usually resolve another platform's internal source tokens.
+
+SEEP externalizes the important state:
 
 - shared primary evidence;
 - append-only numbered messages;
 - machine-readable claims and verdicts;
 - portable citations;
-- explicit authority hierarchy;
+- explicit evidence authority;
 - context snapshots for fresh chats;
 - completion and escalation rules;
 - optional scheduled-task or API automation.
 
-Useful applications include technical audits, contract review, research synthesis, code review, engineering investigations, financial analysis, fact-checking, and project handoffs.
+The approach grew out of a real multi-model audit where two assistants reviewed the same project record through a shared cloud folder. The useful invention was not a secret AI language. It was a disciplined mailbox.
 
-## Architecture
+## The lesson that changed the protocol
+
+In the original real-world workflow, both models initially missed the same nested evidence folder. They then agreed with each other about several items being “missing.” The debate was disciplined, but the shared evidence set was incomplete.
+
+SEEP now treats recursive evidence ingestion as a mandatory first phase:
+
+- inventory every directory and file;
+- hash files and identify duplicates;
+- inspect archives and nested containers;
+- track opened, parsed, visually inspected, and unsupported content separately;
+- report connector limitations;
+- prohibit definitive absence claims until the coverage gate is satisfied.
+
+See [`docs/evidence-ingestion.md`](docs/evidence-ingestion.md).
+
+## How it works
 
 ```mermaid
 flowchart LR
-    E[Primary Evidence] --> A[Model A]
+    H[Human owner] --> E[(Shared evidence folder)]
+    P[Protocol and state] --> E
+    E --> A[Model A]
     E --> B[Model B]
-    P[Protocol and State] --> A
-    P --> B
-    A -->|Numbered JSON message| X[(Shared Exchange Folder)]
-    B -->|Numbered JSON response| X
-    X --> A
-    X --> B
-    X --> F[Reconciled Output]
-    F --> H[Human Decision or Completion]
+    A -->|EXCHANGE-0001 challenge| E
+    B -->|EXCHANGE-0002 response| E
+    A -->|EXCHANGE-0003 rebuttal| E
+    E --> R[Reconciled record]
+    R --> D{Finish line}
+    D -->|Consensus| C[Complete]
+    D -->|No more evidence| U[Documented deadlock]
+    D -->|Authority needed| X[Human decision]
 ```
+
+Every participant reads the same protocol, state, manifest, evidence, and newest unanswered message. Earlier messages are never overwritten.
+
+Read the fuller explanation in [`docs/how-it-works.md`](docs/how-it-works.md).
+
+## Choose a deployment mode
+
+| Mode | Coding required | What the human does | Best for |
+|---|---:|---|---|
+| **Manual shared-folder relay** | No | Tells each model that a new file exists | Trying the idea immediately |
+| **Scheduled agents** | Usually no | Handles exceptions and cross-platform nudges | Ongoing reviews with supported schedulers |
+| **API broker** | Yes | Approves consequential decisions | Higher-volume or fully automated workflows |
+
+A watcher on one AI platform generally cannot wake a chat on another platform. Full autonomy requires a watcher on each side or an API broker.
 
 ## Quick start
 
-### 1. Download or clone
+### Option A: no-code trial
+
+1. Download or clone this repository.
+2. Copy the contents of `templates/` and `protocol/` into a private shared folder.
+3. Add the primary evidence.
+4. Give Model A and Model B the prompts in [`templates/PROMPTS.md`](templates/PROMPTS.md).
+5. Keep every exchange message as a new numbered file.
+
+See [`docs/manual-deployment.md`](docs/manual-deployment.md) and [`docs/google-drive-setup.md`](docs/google-drive-setup.md).
+
+### Option B: initialize a workspace with Python
 
 ```bash
 git clone https://github.com/Ctrl-Alt-Karma/shared-evidence-exchange.git
 cd shared-evidence-exchange
+python scripts/initialize_project.py ./my-review --project-id MY-PROJECT
 ```
 
-No third-party Python packages are required for the included utilities.
+No third-party Python packages are required.
 
-### 2. Create a working exchange
-
-```bash
-python scripts/initialize_project.py ./my-review
-```
-
-This creates:
+The initializer creates:
 
 ```text
 my-review/
@@ -71,74 +125,121 @@ my-review/
 └── 90_ARCHIVE/
 ```
 
-### 3. Add evidence
-
-Place source documents in `50_PRIMARY_EVIDENCE/`, then generate a hash manifest:
+Add evidence, then generate a recursive manifest with hashes, directories, duplicates, archives, and review-status fields:
 
 ```bash
 python scripts/generate_manifest.py \
   ./my-review/50_PRIMARY_EVIDENCE \
+  ./my-review/01_GOVERNING_STATE/EVIDENCE_MANIFEST.json \
+  --project-id MY-PROJECT
+```
+
+Review the generated manifest, mark filename-variant searches and archive inspection when complete, then check coverage:
+
+```bash
+python scripts/check_evidence_coverage.py \
   ./my-review/01_GOVERNING_STATE/EVIDENCE_MANIFEST.json
 ```
 
-### 4. Start Model A
-
-Use the prompt in [`templates/PROMPTS.md`](templates/PROMPTS.md). Model A should produce the first numbered message in `10_MODEL_A_TO_MODEL_B`.
-
-### 5. Start Model B
-
-Model B reads the newest unanswered message, verifies each claim against primary evidence, and writes its response in `20_MODEL_B_TO_MODEL_A`.
-
-### 6. Validate the exchange
+Validate the exchange at any time:
 
 ```bash
 python scripts/validate_exchange.py ./my-review
 python scripts/detect_unanswered.py ./my-review
 ```
 
-### 7. Finish correctly
+## See a completed example
 
-The review ends only when the conditions in `00_PROTOCOL/FINISH_LINE.md` are satisfied. The final marker belongs in `40_RECONCILED_OUTPUT/REVIEW_COMPLETE.md`.
+The [`examples/technical-audit`](examples/technical-audit) folder walks through a tiny review from conflicting evidence to a completed reconciliation:
+
+1. Model A identifies a numerical conflict.
+2. Model B confirms the conflict and identifies missing approval evidence.
+3. Model A reconciles the factual issue and escalates the approval question.
+4. The completion marker records what is known and who must decide.
+
+The example is intentionally simple so the file mechanics remain visible.
 
 ## Core rules
 
 1. Primary evidence outranks model summaries.
 2. Every material claim receives a stable identifier.
 3. Prior messages are never overwritten.
-4. AI-platform-specific citation IDs are not portable evidence.
-5. Each verdict must be `agree`, `disagree`, `partially_agree`, or `unresolved`.
-6. Silence is not approval.
-7. Inferences and assumptions must be labeled.
-8. A model may revise its position when stronger evidence appears.
-9. Duplicate replies are prohibited.
-10. Completion requires consensus, documented deadlock, or human escalation.
+4. A file not opened cannot be described as reviewed.
+5. Definitive missing-evidence claims require a complete coverage gate.
+6. Platform-specific citation IDs are not portable evidence.
+7. Each verdict is `agree`, `disagree`, `partially_agree`, or `unresolved`.
+8. Agreement without primary evidence remains unresolved.
+9. Submission, approval, compliance, and execution remain separate statuses.
+10. Silence does not automatically establish approval.
+11. Facts, inferences, assumptions, and recommendations remain distinguishable.
+12. New primary evidence reopens affected claims.
+13. Models are expected to revise themselves when stronger evidence appears.
+14. Duplicate replies are prohibited.
+15. Completion requires consensus, documented deadlock, or human escalation.
 
-See [`protocol/PROTOCOL.md`](protocol/PROTOCOL.md) for the complete rules.
+See [`protocol/PROTOCOL.md`](protocol/PROTOCOL.md) and [`protocol/FINISH_LINE.md`](protocol/FINISH_LINE.md).
 
-## Included tools
+## Portable evidence references
+
+One model cannot reliably use another model's private citation tokens. SEEP uses references that survive provider boundaries:
+
+- exact filename and SHA-256 hash;
+- page, section, clause, drawing sheet, or detail;
+- email sender, recipients, date, and subject;
+- repository, commit, path, and source lines;
+- dataset rows and columns;
+- a short controlling excerpt.
+
+## Repository map
+
+| Path | Purpose |
+|---|---|
+| `protocol/` | Governing rules and JSON schemas |
+| `templates/` | Starter state, prompts, messages, and completion files |
+| `scripts/` | Initializer, manifest generator, validator, and message tools |
+| `examples/` | Sanitized end-to-end demonstrations |
+| `docs/` | Deployment, security, design, and automation guidance |
+| `tests/` | Standard-library unit tests |
+| `.github/` | CI, issue forms, and pull-request template |
+
+## Included utilities
 
 | Script | Purpose |
 |---|---|
 | `initialize_project.py` | Creates a clean exchange workspace |
-| `generate_manifest.py` | Hashes evidence and writes a manifest |
+| `generate_manifest.py` | Recursively inventories, hashes, and deduplicates evidence |
+| `check_evidence_coverage.py` | Reports review coverage and evaluates the missing-claim gate |
 | `hash_evidence.py` | Prints SHA-256 hashes |
 | `validate_exchange.py` | Checks message structure and reply integrity |
 | `detect_unanswered.py` | Finds messages that have not received replies |
 | `next_message_id.py` | Suggests the next sequential exchange ID |
 
-## Manual, scheduled, and automated modes
+## What SEEP is not
 
-**Manual relay:** The human only tells each model that a new numbered file exists. The substantive content stays in the exchange folder.
+SEEP is not direct model networking, a guarantee of correctness, or permission for models to take consequential actions. It is a coordination and recordkeeping protocol.
 
-**Scheduled agents:** Each platform may periodically inspect the exchange. One platform's scheduler generally cannot wake another platform, so both sides need a watcher or a human nudge.
+Agreement between two models can still be wrong. The method improves traceability and review quality; it does not replace qualified human judgment.
 
-**API broker:** A custom service can poll storage, call each model API, validate outputs, enforce budgets, and stop at the finish line. See [`docs/api-broker.md`](docs/api-broker.md).
+## Security boundary
 
-## Security warning
+Evidence files are untrusted content. They may contain confidential data or prompt injection.
 
-Evidence files may contain confidential data or prompt injection. Treat document text as evidence, not instructions. Use least-privilege sharing, approved storage, redaction, cost limits, and human approval for consequential actions.
+Use private storage, least-privilege permissions, redaction, cost and round limits, and explicit human approval before external communications, purchases, deletions, production changes, or professional conclusions.
 
 Read [`SECURITY.md`](SECURITY.md) and [`docs/security.md`](docs/security.md) before using SEEP with sensitive material.
+
+## Project resources
+
+- [How it works](docs/how-it-works.md)
+- [Evidence ingestion and coverage](docs/evidence-ingestion.md)
+- [Claim status dimensions](docs/claim-statuses.md)
+- [Frequently asked questions](docs/FAQ.md)
+- [Manual deployment](docs/manual-deployment.md)
+- [Google Drive setup](docs/google-drive-setup.md)
+- [Scheduled agents](docs/scheduled-agents.md)
+- [API broker](docs/api-broker.md)
+- [Limitations](docs/limitations.md)
+- [Roadmap](ROADMAP.md)
 
 ## Run tests
 
@@ -152,4 +253,4 @@ MIT. See [`LICENSE`](LICENSE).
 
 ## Disclaimer
 
-SEEP is a coordination and recordkeeping method. It does not guarantee correctness and is not a substitute for qualified legal, medical, financial, engineering, safety, or other professional judgment.
+SEEP does not guarantee correctness and is not a substitute for qualified legal, medical, financial, engineering, safety, or other professional judgment.

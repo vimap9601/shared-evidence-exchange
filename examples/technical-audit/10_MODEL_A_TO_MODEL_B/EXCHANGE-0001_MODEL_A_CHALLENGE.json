@@ -39,7 +39,18 @@
         "disagree",
         "partially_agree",
         "unresolved"
-      ]
+      ],
+      "evidence_basis": [
+        "document_reported"
+      ],
+      "status_dimensions": {
+        "submission": "submitted",
+        "approval": "unresolved",
+        "compliance": "noncompliant-with-stated-limit",
+        "execution": "human-decision-required"
+      },
+      "supersedes_claim_ids": [],
+      "reopens_claim_ids": []
     }
   ],
   "open_questions": [
@@ -54,5 +65,19 @@
     "primary_source_basis": true,
     "counterevidence_required": true,
     "remaining_uncertainty_required": true
+  },
+  "evidence_coverage": {
+    "manifest_file": "01_GOVERNING_STATE/EVIDENCE_MANIFEST.json",
+    "inventory_complete": true,
+    "files_total": 2,
+    "files_opened": 2,
+    "files_parsed": 2,
+    "files_visually_inspected": 0,
+    "files_not_opened": 0,
+    "folders_not_recursively_reviewed": [],
+    "unsupported_file_types": [],
+    "archives_not_inspected": [],
+    "known_connector_limitations": [],
+    "missing_claim_gate_satisfied": true
   }
 }

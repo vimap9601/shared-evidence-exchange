@@ -10,7 +10,7 @@ MESSAGE_ID_RE = re.compile(r"^EXCHANGE-(\d{4})([A-Z]?)$")
 REQUIRED_FIELDS = {
     "protocol", "project_id", "message_id", "in_reply_to", "sender",
     "recipient", "created_at", "message_type", "summary_markdown",
-    "claims", "open_questions", "required_response",
+    "evidence_coverage", "claims", "open_questions", "required_response",
 }
 
 
@@ -65,6 +65,31 @@ def validate_message(message: dict[str, Any]) -> list[str]:
     sender, recipient = message.get("sender"), message.get("recipient")
     if sender and recipient and sender == recipient:
         errors.append("sender and recipient must differ")
+
+    coverage = message.get("evidence_coverage")
+    if not isinstance(coverage, dict):
+        errors.append("evidence_coverage must be an object")
+    else:
+        required_coverage = {
+            "manifest_file", "inventory_complete", "files_total", "files_opened",
+            "files_parsed", "files_visually_inspected", "files_not_opened",
+            "folders_not_recursively_reviewed", "unsupported_file_types",
+            "archives_not_inspected", "known_connector_limitations",
+            "missing_claim_gate_satisfied",
+        }
+        missing_coverage = sorted(required_coverage - coverage.keys())
+        if missing_coverage:
+            errors.append("evidence_coverage missing fields: " + ", ".join(missing_coverage))
+        for key in ["files_total", "files_opened", "files_parsed", "files_visually_inspected", "files_not_opened"]:
+            value = coverage.get(key)
+            if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                errors.append(f"evidence_coverage.{key} must be a nonnegative integer")
+        total = coverage.get("files_total")
+        opened = coverage.get("files_opened")
+        not_opened = coverage.get("files_not_opened")
+        if all(isinstance(value, int) and not isinstance(value, bool) for value in [total, opened, not_opened]):
+            if opened + not_opened != total:
+                errors.append("evidence_coverage files_opened + files_not_opened must equal files_total")
 
     claims = message.get("claims")
     if not isinstance(claims, list):

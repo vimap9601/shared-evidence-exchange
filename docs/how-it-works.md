@@ -8,6 +8,12 @@ When a person manually copies answers between AI chats, important qualifications
 
 SEEP externalizes the collaboration into files that both models and the human can inspect.
 
+## Phase 0: prove the corpus
+
+Before either model reviews the substance, SEEP recursively inventories the evidence, hashes files, identifies duplicates and archives, and records review coverage. This prevents two models from reinforcing the same error because both overlooked the same folder.
+
+Definitive absence claims are blocked until the missing-claim gate is satisfied. See [`evidence-ingestion.md`](evidence-ingestion.md).
+
 ## The exchange model
 
 Each participant reads:

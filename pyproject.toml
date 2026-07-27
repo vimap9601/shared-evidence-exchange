@@ -1,12 +1,12 @@
 [project]
 name = "shared-evidence-exchange"
-version = "0.1.0"
+version = "0.3.0"
 description = "Provider-independent, append-only AI peer-review exchange protocol"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [{name = "AJ Mitchell"}]
-keywords = ["ai", "multi-agent", "peer-review", "audit", "evidence", "llm", "workflow"]
+keywords = ["ai", "llm", "multi-agent", "peer-review", "audit", "evidence", "evidence-ingestion", "audit-trail", "workflow", "human-in-the-loop", "json-schema"]
 
 [project.urls]
 Homepage = "https://github.com/Ctrl-Alt-Karma/shared-evidence-exchange"

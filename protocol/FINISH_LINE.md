@@ -1,6 +1,6 @@
 # Finish-Line Rule
 
-The exchange is complete only when one of these conditions is met.
+The exchange is complete only after the evidence-coverage report is current and one of these conditions is met.
 
 ## 1. Consensus
 
@@ -8,7 +8,7 @@ All material claims and the resulting action plan are agreed.
 
 ## 2. Documented deadlock
 
-Remaining disagreements are explicit, each model has cited its strongest primary evidence, and no identified evidence path remains unreviewed.
+Remaining disagreements are explicit, each model has cited its strongest primary evidence, the missing-claim gate is satisfied, and no identified evidence path remains unreviewed.
 
 ## 3. Human decision required
 

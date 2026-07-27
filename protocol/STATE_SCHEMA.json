@@ -11,6 +11,9 @@
     "disputed_claims",
     "unresolved_questions",
     "required_human_decisions",
+    "reopened_claims",
+    "evidence_manifest",
+    "evidence_coverage_status",
     "next_actor",
     "status"
   ],
@@ -69,10 +72,32 @@
     "status": {
       "enum": [
         "setup",
+        "coverage_incomplete",
+        "evidence_ingestion",
         "peer_review_open",
         "awaiting_model_a",
         "awaiting_model_b",
         "human_decision_required",
+        "complete"
+      ]
+    },
+    "reopened_claims": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence_manifest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_coverage_status": {
+      "enum": [
+        "not_started",
+        "incomplete",
+        "complete_with_limitations",
         "complete"
       ]
     }
