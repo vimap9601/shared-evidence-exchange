@@ -33,15 +33,29 @@ def load_json(path: Path) -> dict[str, Any]:
 
 
 def discover_messages(root: Path) -> list[tuple[Path, dict[str, Any]]]:
-    messages = []
+    messages, _ = discover_messages_with_errors(root)
+    return messages
+
+
+def discover_messages_with_errors(root: Path) -> tuple[list[tuple[Path, dict[str, Any]]], list[str]]:
+    # An unreadable message file must surface as an error, never disappear:
+    # a silently skipped message can hide a reply or free its ID for reuse.
+    messages: list[tuple[Path, dict[str, Any]]] = []
+    errors: list[str] = []
     for path in sorted(root.rglob("EXCHANGE-*.json")):
         try:
             data = load_json(path)
-        except (OSError, json.JSONDecodeError, ValueError):
+        except (OSError, json.JSONDecodeError) as exc:
+            errors.append(f"{path}: message file could not be read as JSON: {exc}")
+            continue
+        except ValueError as exc:
+            errors.append(str(exc))
             continue
         if "message_id" in data:
             messages.append((path, data))
-    return messages
+        else:
+            errors.append(f"{path}: message file has no message_id")
+    return messages, errors
 
 
 def validate_message(message: dict[str, Any]) -> list[str]:

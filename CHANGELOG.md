@@ -2,6 +2,14 @@
 
 All notable changes will be documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- Unreadable, non-object, or `message_id`-less `EXCHANGE-*.json` files are now reported as errors instead of being silently skipped. Previously `validate_exchange.py` could pass an exchange containing a corrupt message, `detect_unanswered.py` could show an already-answered message as pending (inviting a duplicate reply), and `next_message_id.py` could reissue the corrupt file's number.
+- `next_message_id.py` also counts message numbers from filenames, so a corrupt file's ID is never suggested again.
+- `validate_exchange.py` reports a non-string `sha256` in a claim source as a validation error instead of crashing.
+
 ## [0.4.0] - 2026-07-27
 
 Breaking schema changes from external review. The protocol identifier is now `SEEP-0.4`; it tracks the pre-1.0 release series, and `SEEP-1.0` is reserved for the first frozen schema set.
