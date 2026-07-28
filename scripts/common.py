@@ -39,6 +39,32 @@ REQUIRED_COVERAGE_FIELDS = {
 }
 SHA256_RE = re.compile(r"^[a-fA-F0-9]{64}$")
 
+# These sets mirror protocol/STATE_SCHEMA.json; the schema-agreement tests
+# fail if they drift apart.
+STATE_FILE_RE = re.compile(r"^PROJECT_STATE_(\d{4})\.json$")
+STATE_REQUIRED_FIELDS = {
+    "protocol", "project_id", "state_version", "last_message_id",
+    "agreed_claims", "disputed_claims", "unresolved_questions",
+    "required_human_decisions", "reopened_claims", "evidence_manifest",
+    "evidence_coverage_status", "next_actor", "status",
+}
+STATE_STATUSES = {
+    "setup", "coverage_incomplete", "evidence_ingestion", "peer_review_open",
+    "awaiting_model_a", "awaiting_model_b", "human_decision_required",
+    "complete",
+}
+COVERAGE_STATUSES = {
+    "not_started", "incomplete", "complete_with_limitations", "complete",
+}
+STATE_CLAIM_LIST_FIELDS = ("agreed_claims", "disputed_claims", "reopened_claims")
+STATE_LIST_FIELDS = STATE_CLAIM_LIST_FIELDS + (
+    "unresolved_questions", "required_human_decisions",
+)
+# Statuses under which the exchange has stopped consuming rounds; every other
+# status is an open exchange for the purpose of the max_rounds cap.
+CLOSED_STATUSES = {"human_decision_required", "complete"}
+COMPLETE_COVERAGE_STATUSES = {"complete", "complete_with_limitations"}
+
 
 def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
     digest = hashlib.sha256()
@@ -230,4 +256,71 @@ def validate_message(message: dict[str, Any]) -> list[str]:
                 errors.append(f"open_questions[{index}] missing required fields: " + ", ".join(missing_fields))
     if not isinstance(message.get("required_response"), dict):
         errors.append("required_response must be an object")
+    return errors
+
+
+def validate_state(state: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    missing = sorted(STATE_REQUIRED_FIELDS - state.keys())
+    if missing:
+        errors.append("missing required fields: " + ", ".join(missing))
+
+    if state.get("protocol") != PROTOCOL_VERSION:
+        errors.append(f"protocol must equal {PROTOCOL_VERSION}")
+
+    version = state.get("state_version")
+    if not isinstance(version, int) or isinstance(version, bool) or version < 1:
+        errors.append("state_version must be a positive integer")
+
+    last = state.get("last_message_id")
+    if last is not None and (not isinstance(last, str) or not MESSAGE_ID_RE.fullmatch(last)):
+        errors.append("last_message_id must be null or a valid exchange ID")
+
+    project_id = state.get("project_id")
+    if "project_id" in state and (not isinstance(project_id, str) or not project_id):
+        errors.append("project_id must be a nonempty string")
+
+    for field in STATE_LIST_FIELDS:
+        value = state.get(field)
+        if field not in state:
+            continue
+        if not isinstance(value, list) or any(
+            not isinstance(item, str) or not item for item in value
+        ):
+            errors.append(f"{field} must be an array of nonempty strings")
+
+    if state.get("status") not in STATE_STATUSES:
+        errors.append("status must be one of: " + ", ".join(sorted(STATE_STATUSES)))
+    if state.get("evidence_coverage_status") not in COVERAGE_STATUSES:
+        errors.append(
+            "evidence_coverage_status must be one of: " + ", ".join(sorted(COVERAGE_STATUSES))
+        )
+
+    next_actor = state.get("next_actor")
+    if "next_actor" in state and next_actor is not None and (
+        not isinstance(next_actor, str) or not next_actor
+    ):
+        errors.append("next_actor must be null or a nonempty string")
+
+    manifest = state.get("evidence_manifest")
+    if "evidence_manifest" in state and manifest is not None and not isinstance(manifest, str):
+        errors.append("evidence_manifest must be null or a string")
+
+    max_rounds = state.get("max_rounds")
+    if max_rounds is not None and (
+        not isinstance(max_rounds, int) or isinstance(max_rounds, bool) or max_rounds < 1
+    ):
+        errors.append("max_rounds must be a positive integer")
+
+    decisions = state.get("required_human_decisions")
+    if state.get("status") == "human_decision_required" and decisions == []:
+        errors.append(
+            "status human_decision_required requires at least one entry in required_human_decisions"
+        )
+    if state.get("status") == "complete" and state.get(
+        "evidence_coverage_status"
+    ) in COVERAGE_STATUSES and state["evidence_coverage_status"] not in COMPLETE_COVERAGE_STATUSES:
+        errors.append(
+            "status complete requires evidence_coverage_status complete or complete_with_limitations"
+        )
     return errors

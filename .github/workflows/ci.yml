@@ -22,3 +22,5 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Validate example
         run: python scripts/validate_exchange.py examples/technical-audit
+      - name: Validate example state
+        run: python scripts/validate_state.py examples/technical-audit
