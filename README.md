@@ -1,6 +1,6 @@
 # Shared Evidence Exchange Protocol
 
-![Two cartoon robots fight in a pit, one swinging a manila folder and the other blocking with a giant magnifying glass, while spectator robots hold up scorecards and a referee shouts "FIGHT!" through a megaphone](docs/assets/banner.png)
+![A cartoon robot feeds a claim card into an "Evidence Test Bench" machine whose screen reads FAIL then PASS; the machine sorts claims into three trays labelled PROMOTED, KILLED, and UNRESOLVED, and a person stands beside the UNRESOLVED tray holding a stamp](docs/assets/banner.png)
 
 [![CI](https://github.com/Ctrl-Alt-Karma/shared-evidence-exchange/actions/workflows/ci.yml/badge.svg)](https://github.com/Ctrl-Alt-Karma/shared-evidence-exchange/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -14,6 +14,36 @@ SEEP turns an ordinary shared folder, such as Google Drive, OneDrive, Dropbox, S
 Instead of copying answers between chats, each model reads the same evidence, writes a numbered response, and leaves the previous record untouched. The result is inspectable, challengeable, restartable, and much less vulnerable to context drift.
 
 > **Project status:** public alpha. The protocol and starter tools work today, but interfaces and schemas may evolve before version 1.0.
+
+## Where this is heading
+
+The shipped protocol (0.4) is consensus-oriented: two models read the same
+evidence and exchange numbered messages until they agree, deadlock, or escalate
+to a human. That framing has a known weak spot — two models with overlapping
+training data tend to agree on the *same* wrong things, so consensus is exactly
+where shared blind spots hide.
+
+The v0.5 line (experimental, in
+[`docs/design/v0.5-oracle-model.md`](docs/design/v0.5-oracle-model.md)) moves the
+decisive step away from agreement and onto **oracles that are not models** — a
+test that executes, a citation that resolves to real bytes. A finding is not
+accepted because a second model concurs; it is **promoted** only when a
+falsifying test fails on the buggy code and passes on the fix. Agreement becomes
+a hint about who writes that test, never the verdict.
+
+```mermaid
+flowchart LR
+    O[open claim] --> G{falsifying test?}
+    G -->|fails at base, passes at fix| P[promoted]
+    G -->|disproven / not reproduced| K[killed]
+    G -->|cannot reduce to a test| U[unresolved → human]
+```
+
+A runnable first cut lives in `scripts/ledger.py`, `scripts/run_falsification.py`,
+and `scripts/verify_gate.py`, with a worked example in
+[`examples/oracle-core/`](examples/oracle-core/). It is a preview, not a promise:
+whether it earns its place is being decided by a real-world test, not by
+specification. See the [roadmap](ROADMAP.md).
 
 ## The 30-second version
 
