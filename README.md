@@ -153,7 +153,14 @@ Validate the exchange at any time:
 
 ```bash
 python scripts/validate_exchange.py ./my-review
+python scripts/validate_state.py ./my-review
 python scripts/detect_unanswered.py ./my-review
+```
+
+To start the exchange (or draft the next turn) without hand-copying templates:
+
+```bash
+python scripts/scaffold_message.py ./my-review
 ```
 
 ## See a completed example
@@ -221,6 +228,8 @@ One model cannot reliably use another model's private citation tokens. SEEP uses
 | `check_evidence_coverage.py` | Reports review coverage and evaluates the missing-claim gate |
 | `hash_evidence.py` | Prints SHA-256 hashes |
 | `validate_exchange.py` | Checks message structure and reply integrity |
+| `validate_state.py` | Cross-checks project-state files against the message record |
+| `scaffold_message.py` | Scaffolds the next exchange message with IDs and reply target pre-filled |
 | `detect_unanswered.py` | Finds messages that have not received replies |
 | `next_message_id.py` | Suggests the next sequential exchange ID |
 

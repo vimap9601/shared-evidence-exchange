@@ -2,6 +2,16 @@
 
 SEEP is an early public protocol. The roadmap favors boring reliability over theatrical autonomy.
 
+## Decisions
+
+- **The directional message folders (`10_MODEL_A_TO_MODEL_B/`, `20_MODEL_B_TO_MODEL_A/`, `30_MODEL_A_REBUTTALS/`) will collapse into a single `10_EXCHANGE/` folder in v0.5.0** (decided 2026-07-28, review finding 12). Message headers already carry sender, recipient, and reply target, so the directional split adds filing overhead without adding information. The initializer, scaffolder, examples, and docs will migrate together; the other numbered folders keep their roles.
+
+## Implemented since v0.4.1
+
+- `validate_state.py` cross-checks of state files against the message record, including finish-line enforcement for `max_rounds`, escalation, and completion markers.
+- A command that scaffolds the next exchange message (`scaffold_message.py`).
+- Tests for deadlock and human-escalation flows.
+
 ## Implemented in v0.4.0
 
 - Per-participant coverage, access attestation, and a per-participant missing-claim gate.
@@ -20,11 +30,9 @@ SEEP is an early public protocol. The roadmap favors boring reliability over the
 ## Near term
 
 - Expand the completed example library.
-- Add automatic claim-reopening checks and a `validate_state.py` cross-check of state files against the message record.
-- Add a command that scaffolds a complete first exchange packet.
+- Add automatic claim-reopening checks when new evidence lands.
+- Collapse the directional message folders into `10_EXCHANGE/` (see Decisions).
 - Improve Windows and no-code setup documentation.
-- Add tests for deadlocks and human-escalation flows.
-- Decide whether to collapse the directional message folders into a single `10_EXCHANGE/` folder before 1.0.
 
 ## Reference implementation
 
