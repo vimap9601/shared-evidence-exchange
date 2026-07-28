@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 from pathlib import Path
-from common import discover_messages, load_json, validate_message
+from common import discover_messages, discover_messages_with_errors, load_json, validate_message
 
 
 def find_manifest(root: Path) -> Path | None:
@@ -40,7 +40,13 @@ def validate_sources_against_manifest(path: Path, message: dict, manifest: dict)
                 )
                 continue
             cited_hash = source.get("sha256")
-            if cited_hash and cited_hash.lower() != str(record.get("sha256", "")).lower():
+            if cited_hash is None:
+                continue
+            if not isinstance(cited_hash, str):
+                errors.append(
+                    f"{path}: claim {claim_id} cites {file_ref} with a non-string sha256"
+                )
+            elif cited_hash and cited_hash.lower() != str(record.get("sha256", "")).lower():
                 errors.append(
                     f"{path}: claim {claim_id} cites {file_ref} with sha256 {cited_hash}, "
                     f"but the manifest records {record.get('sha256')}"
@@ -49,9 +55,8 @@ def validate_sources_against_manifest(path: Path, message: dict, manifest: dict)
 
 
 def validate_exchange(root: Path, manifest_path: Path | None = None) -> list[str]:
-    errors: list[str] = []
-    messages = discover_messages(root)
-    if not messages:
+    messages, errors = discover_messages_with_errors(root)
+    if not messages and not errors:
         return ["no EXCHANGE-*.json messages found"]
 
     manifest = None

@@ -8,6 +8,9 @@ All notable changes will be documented here.
 
 - `validate_message` now enforces constraints that `RESPONSE_SCHEMA.json` already declared but the stdlib validator silently skipped: the `message_type`, claim `position`, and `materiality` enums; required claim fields (`statement`, `reasoning_summary`, and the rest); `file` and `authority` on every source and counterevidence entry, with a 64-hex `sha256` when present; and the required fields of each open question. A message with `message_type: "banana"` or a claim without a statement no longer passes validation.
 - New schema-agreement tests compare the validator's constants against `protocol/RESPONSE_SCHEMA.json`, so future schema edits fail the test suite until the validator matches.
+- Unreadable, non-object, or `message_id`-less `EXCHANGE-*.json` files are now reported as errors instead of being silently skipped. Previously `validate_exchange.py` could pass an exchange containing a corrupt message, `detect_unanswered.py` could show an already-answered message as pending (inviting a duplicate reply), and `next_message_id.py` could reissue the corrupt file's number.
+- `next_message_id.py` also counts message numbers from filenames, so a corrupt file's ID is never suggested again.
+- `validate_exchange.py` reports a non-string `sha256` in a claim source as a validation error instead of crashing.
 
 ## [0.4.0] - 2026-07-27
 

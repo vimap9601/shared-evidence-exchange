@@ -13,6 +13,7 @@ from common import PROTOCOL_VERSION
 from detect_unanswered import find_unanswered
 from generate_manifest import generate_manifest
 from initialize_project import initialize
+from next_message_id import suggest_next_id
 from validate_exchange import validate_exchange
 
 
@@ -158,9 +159,58 @@ class ExchangeToolTests(unittest.TestCase):
             root = Path(tmp)
             (root / "EXCHANGE-0001_A.json").write_text(json.dumps(message("EXCHANGE-0001", None)))
             (root / "EXCHANGE-0002_B.json").write_text(json.dumps(message("EXCHANGE-0002", "EXCHANGE-0001")))
-            pending = find_unanswered(root)
+            pending, errors = find_unanswered(root)
+            self.assertEqual(errors, [])
             self.assertEqual(len(pending), 1)
             self.assertEqual(pending[0][1]["message_id"], "EXCHANGE-0002")
+
+    def test_unreadable_message_file_is_an_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "EXCHANGE-0001_A.json").write_text("{ not valid json")
+            errors = validate_exchange(root)
+            self.assertTrue(any("could not be read as JSON" in e for e in errors))
+            self.assertNotIn("no EXCHANGE-*.json messages found", errors)
+
+    def test_unreadable_message_does_not_hide_among_valid_ones(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "EXCHANGE-0001_A.json").write_text(json.dumps(message("EXCHANGE-0001", None)))
+            (root / "EXCHANGE-0002_B.json").write_text("{ not valid json")
+            errors = validate_exchange(root)
+            self.assertTrue(any("EXCHANGE-0002_B.json" in e for e in errors))
+
+    def test_non_object_message_is_an_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "EXCHANGE-0001_A.json").write_text("[]")
+            errors = validate_exchange(root)
+            self.assertTrue(any("expected a JSON object" in e for e in errors))
+
+    def test_message_without_message_id_is_an_error(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "EXCHANGE-0001_A.json").write_text("{}")
+            errors = validate_exchange(root)
+            self.assertTrue(any("has no message_id" in e for e in errors))
+
+    def test_unanswered_reports_unreadable_reply(self):
+        # If the reply file is corrupt, EXCHANGE-0001 looks unanswered; the
+        # errors channel is what stops a participant from replying twice.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "EXCHANGE-0001_A.json").write_text(json.dumps(message("EXCHANGE-0001", None)))
+            (root / "EXCHANGE-0002_B.json").write_text("{ not valid json")
+            pending, errors = find_unanswered(root)
+            self.assertEqual([m["message_id"] for _, m in pending], ["EXCHANGE-0001"])
+            self.assertTrue(any("EXCHANGE-0002_B.json" in e for e in errors))
+
+    def test_next_id_skips_past_unreadable_files(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "EXCHANGE-0001_A.json").write_text(json.dumps(message("EXCHANGE-0001", None)))
+            (root / "EXCHANGE-0002_B.json").write_text("{ not valid json")
+            self.assertEqual(suggest_next_id(root), "EXCHANGE-0003")
 
     def test_correction_flow_validates(self):
         # A challenges, B responds, A rebuts, then B corrects its own 0002.
@@ -215,6 +265,25 @@ class ExchangeToolTests(unittest.TestCase):
                 message("EXCHANGE-0001", None, claims=claims)))
             errors = validate_exchange(root)
             self.assertTrue(any("ghost_file.pdf" in e and "not in the evidence manifest" in e for e in errors))
+
+    def test_non_string_source_hash_is_an_error_not_a_crash(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest = {
+                "files": [
+                    {"path": "a.txt", "sha256": "a" * 64},
+                ]
+            }
+            (root / "EVIDENCE_MANIFEST.json").write_text(json.dumps(manifest))
+            claims = [{
+                "claim_id": "C-1", "statement": "Test", "position": "supported",
+                "confidence": 0.9, "materiality": "high", "reasoning_summary": "Test",
+                "sources": [{"file": "a.txt", "authority": "primary", "sha256": 12345}],
+            }]
+            (root / "EXCHANGE-0001_A.json").write_text(json.dumps(
+                message("EXCHANGE-0001", None, claims=claims)))
+            errors = validate_exchange(root)
+            self.assertTrue(any("non-string sha256" in e for e in errors))
 
     def test_source_hash_must_match_manifest(self):
         with tempfile.TemporaryDirectory() as tmp:
