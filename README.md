@@ -1,5 +1,7 @@
 # Shared Evidence Exchange Protocol
 
+![Two cartoon robots fight in a pit, one swinging a manila folder and the other blocking with a giant magnifying glass, while spectator robots hold up scorecards and a referee shouts "FIGHT!" through a megaphone](docs/assets/banner.png)
+
 [![CI](https://github.com/Ctrl-Alt-Karma/shared-evidence-exchange/actions/workflows/ci.yml/badge.svg)](https://github.com/Ctrl-Alt-Karma/shared-evidence-exchange/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](pyproject.toml)
