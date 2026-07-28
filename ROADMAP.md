@@ -2,9 +2,46 @@
 
 SEEP is an early public protocol. The roadmap favors boring reliability over theatrical autonomy.
 
-## Decisions
+## Direction: the oracle model (v0.5, experimental)
 
-- **The directional message folders (`10_MODEL_A_TO_MODEL_B/`, `20_MODEL_B_TO_MODEL_A/`, `30_MODEL_A_REBUTTALS/`) will collapse into a single `10_EXCHANGE/` folder in v0.5.0** (decided 2026-07-28, review finding 12). Message headers already carry sender, recipient, and reply target, so the directional split adds filing overhead without adding information. The initializer, scaffolder, examples, and docs will migrate together; the other numbered folders keep their roles.
+The v0.5 line is being reframed around a single principle: **maximize non-model
+oracles, minimize model-to-model adjudication.** Debate between two models given
+identical inputs provably does not improve correctness, and treating their
+consensus as success rewards correlated blind spots. The value that survives is
+the part decided by an oracle rather than a model — a red-green test, a citation
+that resolves to real bytes. The reasoning is in
+[`docs/design/v0.5-oracle-model.md`](docs/design/v0.5-oracle-model.md).
+
+A runnable first cut of the oracle core is in `scripts/` now
+(`ledger.py`, `run_falsification.py`, `verify_gate.py`) with a worked example in
+[`examples/oracle-core/`](examples/oracle-core/):
+
+- an append-only claim ledger with terminals **promoted / killed / unresolved**
+  (consensus is no longer a terminal state);
+- a **promote gate** that refuses to advance a claim without a falsification
+  record that fails at base and passes at fix;
+- **rule 8 extended to concessions**: a change of position toward agreement must
+  cite new evidence, or the ledger rejects it;
+- **citation resolution** against git blobs / files by sha256 and excerpt.
+
+Open, on purpose: **one agent or two.** v1 is one agent + the falsifiability
+gate. The adversarial second agent (finder writes the failing test, the other
+writes the fix without seeing it) is a *hypothesis with a test attached*, not a
+committed premise — see below.
+
+### The acceptance test
+
+Run the oracle core against the five MoSeq2 forks (upstream = base tree, fork =
+fix tree). **Does an oracle-gated review promote at least one real numerical
+defect that a single unstructured pass missed?** If yes, SEEP is justified and
+the caught bug is the artifact. If no, its value is thinner than hoped — worth
+knowing cheaply. Either outcome is published, failures included.
+
+### Deferred (was the old v0.5 headline)
+
+- Collapsing the directional message folders into `10_EXCHANGE/`. Still
+  reasonable, but a deck chair next to the oracle question; it is deferred, not
+  scheduled, until the acceptance test above has run.
 
 ## Implemented since v0.4.1
 
@@ -29,9 +66,10 @@ SEEP is an early public protocol. The roadmap favors boring reliability over the
 
 ## Near term
 
+- Run the oracle-core acceptance test on the MoSeq2 forks (see Direction).
+- If v1 earns it: add the adversarial second agent (finder writes the failing test, the other writes the fix without seeing it) and measure whether it kills findings the single-agent pass promoted.
 - Expand the completed example library.
 - Add automatic claim-reopening checks when new evidence lands.
-- Collapse the directional message folders into `10_EXCHANGE/` (see Decisions).
 - Improve Windows and no-code setup documentation.
 
 ## Reference implementation

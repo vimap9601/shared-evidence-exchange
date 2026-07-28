@@ -232,6 +232,9 @@ One model cannot reliably use another model's private citation tokens. SEEP uses
 | `scaffold_message.py` | Scaffolds the next exchange message with IDs and reply target pre-filled |
 | `detect_unanswered.py` | Finds messages that have not received replies |
 | `next_message_id.py` | Suggests the next sequential exchange ID |
+| `ledger.py` *(experimental)* | Append-only claim ledger; promotes findings only through a red-green oracle |
+| `run_falsification.py` *(experimental)* | Runs a repro command red-green against a base tree and a fix tree |
+| `verify_gate.py` *(experimental)* | Resolves cited evidence against real bytes (git blob / file, sha256, excerpt) |
 
 ## What SEEP is not
 
@@ -258,6 +261,7 @@ Read [`SECURITY.md`](SECURITY.md) and [`docs/security.md`](docs/security.md) bef
 - [Scheduled agents](docs/scheduled-agents.md)
 - [API broker](docs/api-broker.md)
 - [Limitations](docs/limitations.md)
+- [Design: the oracle model (v0.5, experimental)](docs/design/v0.5-oracle-model.md)
 - [Roadmap](ROADMAP.md)
 
 ## Run tests

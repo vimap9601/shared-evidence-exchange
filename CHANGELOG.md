@@ -6,6 +6,18 @@ All notable changes will be documented here.
 
 ### Added
 
+- **Oracle core (experimental, v0.5 preview).** A first, additive cut of a
+  claim ledger whose promotion gate is an oracle rather than an agreement.
+  `scripts/ledger.py` is an append-only event log with terminals
+  **promoted / killed / unresolved** — consensus is no longer a terminal state;
+  a claim reaches `promoted` only with a red-green falsification record (fails at
+  base, passes at fix, executed), and a concession toward agreement is rejected
+  unless it cites new evidence (rule 8 extended to concessions).
+  `scripts/run_falsification.py` runs a repro command red-green against a base
+  tree and a fix tree. `scripts/verify_gate.py` resolves cited evidence against
+  real bytes (git blob or file, by sha256 and excerpt). Worked example and
+  reasoning: `examples/oracle-core/` and `docs/design/v0.5-oracle-model.md`.
+  None of this changes the SEEP-0.4 message or state protocol.
 - `validate_state.py`: standard-library validation of `PROJECT_STATE_*.json` files, cross-checked against the message record. Checks include filename/`state_version` agreement, `last_message_id` and every referenced claim or open question existing on record, a consistent `project_id`, an existing `evidence_manifest` path, and the finish-line rules: reaching `max_rounds` with an open status is an error, `human_decision_required` needs at least one recorded decision, and `complete` requires a `REVIEW_COMPLETE.md` marker and complete (or explicitly limited) coverage.
 - Schema-agreement tests for `STATE_SCHEMA.json`, matching the existing message-schema pattern: a future schema edit fails the suite until the state validator matches.
 - `scaffold_message.py`: scaffolds the next exchange message — the first challenge in a fresh workspace, or a reply to the newest unanswered message with the sender flipped, the message ID, reply target, project ID, and coverage reviewer pre-filled. Refuses to scaffold on a record containing unreadable message files, since the pending reply may be hiding in one.

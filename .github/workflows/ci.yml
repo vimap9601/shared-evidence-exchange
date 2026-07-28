@@ -24,3 +24,5 @@ jobs:
         run: python scripts/validate_exchange.py examples/technical-audit
       - name: Validate example state
         run: python scripts/validate_state.py examples/technical-audit
+      - name: Verify oracle-core example ledger
+        run: python scripts/ledger.py verify examples/oracle-core/ledger.jsonl
