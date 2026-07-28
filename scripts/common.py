@@ -14,6 +14,30 @@ REQUIRED_FIELDS = {
     "evidence_coverage", "claims", "open_questions", "required_response",
 }
 AGREEMENT_POSITIONS = {"agree", "partially_agree"}
+# These sets mirror protocol/RESPONSE_SCHEMA.json so workspaces need no
+# third-party validator; the schema-agreement tests fail if they drift apart.
+MESSAGE_TYPES = {
+    "audit_challenge", "response", "rebuttal", "correction",
+    "reconciliation", "escalation",
+}
+CLAIM_POSITIONS = {
+    "supported", "rejected", "uncertain", "agree", "disagree",
+    "partially_agree", "unresolved",
+}
+CLAIM_MATERIALITY = {"low", "medium", "high", "critical"}
+REQUIRED_CLAIM_FIELDS = {
+    "claim_id", "statement", "position", "confidence", "materiality",
+    "reasoning_summary", "sources",
+}
+REQUIRED_OPEN_QUESTION_FIELDS = {"question_id", "question", "evidence_needed"}
+REQUIRED_COVERAGE_FIELDS = {
+    "manifest_file", "reviewer", "inventory_complete", "files_total",
+    "files_opened", "files_parsed", "files_visually_inspected",
+    "files_not_opened", "folders_not_recursively_reviewed",
+    "unsupported_file_types", "archives_not_inspected",
+    "known_connector_limitations", "missing_claim_gate_satisfied",
+}
+SHA256_RE = re.compile(r"^[a-fA-F0-9]{64}$")
 
 
 def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
@@ -58,6 +82,22 @@ def discover_messages_with_errors(root: Path) -> tuple[list[tuple[Path, dict[str
     return messages, errors
 
 
+def validate_source_entries(prefix: str, sources: list[Any]) -> list[str]:
+    errors: list[str] = []
+    for index, source in enumerate(sources):
+        if not isinstance(source, dict):
+            errors.append(f"{prefix}[{index}] must be an object")
+            continue
+        for key in ["file", "authority"]:
+            value = source.get(key)
+            if not isinstance(value, str) or not value:
+                errors.append(f"{prefix}[{index}].{key} must be a nonempty string")
+        digest = source.get("sha256")
+        if digest is not None and (not isinstance(digest, str) or not SHA256_RE.fullmatch(digest)):
+            errors.append(f"{prefix}[{index}].sha256 must be 64 hexadecimal characters")
+    return errors
+
+
 def validate_message(message: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     missing = sorted(REQUIRED_FIELDS - message.keys())
@@ -66,6 +106,9 @@ def validate_message(message: dict[str, Any]) -> list[str]:
 
     if message.get("protocol") != PROTOCOL_VERSION:
         errors.append(f"protocol must equal {PROTOCOL_VERSION}")
+
+    if message.get("message_type") not in MESSAGE_TYPES:
+        errors.append("message_type must be one of: " + ", ".join(sorted(MESSAGE_TYPES)))
 
     message_id = message.get("message_id")
     if not isinstance(message_id, str) or not MESSAGE_ID_RE.fullmatch(message_id):
@@ -81,6 +124,12 @@ def validate_message(message: dict[str, Any]) -> list[str]:
     sender, recipient = message.get("sender"), message.get("recipient")
     if sender and recipient and sender == recipient:
         errors.append("sender and recipient must differ")
+    for field in ["project_id", "sender", "recipient"]:
+        value = message.get(field)
+        if field in message and (not isinstance(value, str) or not value):
+            errors.append(f"{field} must be a nonempty string")
+    if "summary_markdown" in message and not isinstance(message["summary_markdown"], str):
+        errors.append("summary_markdown must be a string")
 
     corrects = message.get("corrects_message_id")
     if message.get("message_type") == "correction":
@@ -95,14 +144,7 @@ def validate_message(message: dict[str, Any]) -> list[str]:
     if not isinstance(coverage, dict):
         errors.append("evidence_coverage must be an object")
     else:
-        required_coverage = {
-            "manifest_file", "reviewer", "inventory_complete", "files_total",
-            "files_opened", "files_parsed", "files_visually_inspected",
-            "files_not_opened", "folders_not_recursively_reviewed",
-            "unsupported_file_types", "archives_not_inspected",
-            "known_connector_limitations", "missing_claim_gate_satisfied",
-        }
-        missing_coverage = sorted(required_coverage - coverage.keys())
+        missing_coverage = sorted(REQUIRED_COVERAGE_FIELDS - coverage.keys())
         if missing_coverage:
             errors.append("evidence_coverage missing fields: " + ", ".join(missing_coverage))
         reviewer = coverage.get("reviewer")
@@ -134,6 +176,18 @@ def validate_message(message: dict[str, Any]) -> list[str]:
             if not isinstance(claim, dict):
                 errors.append(f"claims[{index}] must be an object")
                 continue
+            missing_fields = sorted(REQUIRED_CLAIM_FIELDS - claim.keys())
+            if missing_fields:
+                errors.append(f"claims[{index}] missing required fields: " + ", ".join(missing_fields))
+            statement = claim.get("statement")
+            if "statement" in claim and (not isinstance(statement, str) or not statement):
+                errors.append(f"claims[{index}].statement must be a nonempty string")
+            if "reasoning_summary" in claim and not isinstance(claim["reasoning_summary"], str):
+                errors.append(f"claims[{index}].reasoning_summary must be a string")
+            if "position" in claim and claim["position"] not in CLAIM_POSITIONS:
+                errors.append(f"claims[{index}].position must be one of: " + ", ".join(sorted(CLAIM_POSITIONS)))
+            if "materiality" in claim and claim["materiality"] not in CLAIM_MATERIALITY:
+                errors.append(f"claims[{index}].materiality must be one of: " + ", ".join(sorted(CLAIM_MATERIALITY)))
             claim_id = claim.get("claim_id")
             if not isinstance(claim_id, str) or not claim_id:
                 errors.append(f"claims[{index}].claim_id is required")
@@ -149,14 +203,31 @@ def validate_message(message: dict[str, Any]) -> list[str]:
             sources = claim.get("sources")
             if not isinstance(sources, list):
                 errors.append(f"claims[{index}].sources must be an array")
-            elif claim.get("position") in AGREEMENT_POSITIONS and not sources:
-                errors.append(
-                    f"claims[{index}] position {claim['position']} requires at least one source; "
-                    "agreement without primary evidence remains unresolved"
-                )
+            else:
+                errors.extend(validate_source_entries(f"claims[{index}].sources", sources))
+                if claim.get("position") in AGREEMENT_POSITIONS and not sources:
+                    errors.append(
+                        f"claims[{index}] position {claim['position']} requires at least one source; "
+                        "agreement without primary evidence remains unresolved"
+                    )
+            counterevidence = claim.get("counterevidence")
+            if counterevidence is not None:
+                if not isinstance(counterevidence, list):
+                    errors.append(f"claims[{index}].counterevidence must be an array")
+                else:
+                    errors.extend(validate_source_entries(f"claims[{index}].counterevidence", counterevidence))
 
-    if not isinstance(message.get("open_questions"), list):
+    open_questions = message.get("open_questions")
+    if not isinstance(open_questions, list):
         errors.append("open_questions must be an array")
+    else:
+        for index, question in enumerate(open_questions):
+            if not isinstance(question, dict):
+                errors.append(f"open_questions[{index}] must be an object")
+                continue
+            missing_fields = sorted(REQUIRED_OPEN_QUESTION_FIELDS - question.keys())
+            if missing_fields:
+                errors.append(f"open_questions[{index}] missing required fields: " + ", ".join(missing_fields))
     if not isinstance(message.get("required_response"), dict):
         errors.append("required_response must be an object")
     return errors
