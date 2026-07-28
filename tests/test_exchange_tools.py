@@ -14,6 +14,7 @@ from detect_unanswered import find_unanswered
 from generate_manifest import generate_manifest
 from initialize_project import initialize
 from next_message_id import suggest_next_id
+from scaffold_message import scaffold_message
 from validate_exchange import validate_exchange
 
 
@@ -311,6 +312,50 @@ class ExchangeToolTests(unittest.TestCase):
                 message("EXCHANGE-0002", "EXCHANGE-0001", claims=bad)))
             errors = validate_exchange(root)
             self.assertTrue(any("but the manifest records" in e for e in errors))
+
+
+class ScaffoldMessageTests(unittest.TestCase):
+    def test_scaffolds_first_challenge(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "exchange"
+            initialize(root, "SCAFFOLD-TEST")
+            path = scaffold_message(root)
+            self.assertEqual(path.parent.name, "10_MODEL_A_TO_MODEL_B")
+            data = json.loads(path.read_text())
+            self.assertEqual(data["message_id"], "EXCHANGE-0001")
+            self.assertEqual(data["project_id"], "SCAFFOLD-TEST")
+            self.assertEqual(data["sender"], "MODEL_A")
+            self.assertIsNone(data["in_reply_to"])
+            self.assertEqual(data["evidence_coverage"]["reviewer"], "MODEL_A")
+
+    def test_scaffolds_reply_with_sender_flipped(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "exchange"
+            initialize(root, "SCAFFOLD-TEST")
+            first = scaffold_message(root)
+            path = scaffold_message(root)
+            self.assertEqual(path.parent.name, "20_MODEL_B_TO_MODEL_A")
+            data = json.loads(path.read_text())
+            self.assertEqual(data["message_id"], "EXCHANGE-0002")
+            self.assertEqual(data["in_reply_to"], "EXCHANGE-0001")
+            self.assertEqual(data["sender"], json.loads(first.read_text())["recipient"])
+            self.assertEqual(data["evidence_coverage"]["reviewer"], data["sender"])
+
+    def test_refuses_to_scaffold_on_a_corrupt_record(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "EXCHANGE-0001_A.json").write_text("{ not valid json")
+            with self.assertRaises(SystemExit):
+                scaffold_message(root)
+
+    def test_refuses_when_no_message_is_pending(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "EXCHANGE-0001_A.json").write_text(json.dumps(message("EXCHANGE-0001", None)))
+            (root / "EXCHANGE-0002_B.json").write_text(json.dumps(
+                message("EXCHANGE-0002", "EXCHANGE-0001", message_type="escalation")))
+            with self.assertRaises(SystemExit):
+                scaffold_message(root)
 
 
 if __name__ == "__main__":
