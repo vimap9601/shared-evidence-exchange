@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import json
 import sys
 import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from common import PROTOCOL_VERSION, validate_message
+from common import (
+    AGREEMENT_POSITIONS, CLAIM_MATERIALITY, CLAIM_POSITIONS, MESSAGE_TYPES,
+    PROTOCOL_VERSION, REQUIRED_CLAIM_FIELDS, REQUIRED_COVERAGE_FIELDS,
+    REQUIRED_FIELDS, REQUIRED_OPEN_QUESTION_FIELDS, validate_message,
+)
 
 
 def valid_message() -> dict:
@@ -91,6 +96,85 @@ class ValidationTests(unittest.TestCase):
         message = valid_message()
         message["corrects_message_id"] = "EXCHANGE-0000"
         self.assertTrue(any("only allowed on correction" in e for e in validate_message(message)))
+
+    def test_unknown_message_type(self):
+        message = valid_message(); message["message_type"] = "banana"
+        self.assertTrue(any("message_type must be one of" in e for e in validate_message(message)))
+
+    def test_unknown_position(self):
+        message = valid_message(); message["claims"][0]["position"] = "banana"
+        self.assertTrue(any("position must be one of" in e for e in validate_message(message)))
+
+    def test_unknown_materiality(self):
+        message = valid_message(); message["claims"][0]["materiality"] = "extreme"
+        self.assertTrue(any("materiality must be one of" in e for e in validate_message(message)))
+
+    def test_claim_requires_statement(self):
+        message = valid_message(); del message["claims"][0]["statement"]
+        self.assertTrue(any("missing required fields: statement" in e for e in validate_message(message)))
+
+    def test_empty_sender_rejected(self):
+        message = valid_message(); message["sender"] = ""
+        self.assertTrue(any("sender must be a nonempty string" in e for e in validate_message(message)))
+
+    def test_source_requires_file_and_authority(self):
+        message = valid_message()
+        message["claims"][0]["sources"] = [{"file": "a.txt"}]
+        self.assertTrue(any("authority must be a nonempty string" in e for e in validate_message(message)))
+
+    def test_source_hash_must_be_hex(self):
+        message = valid_message()
+        message["claims"][0]["sources"] = [{"file": "a.txt", "authority": "primary", "sha256": "xyz"}]
+        self.assertTrue(any("64 hexadecimal characters" in e for e in validate_message(message)))
+        message["claims"][0]["sources"][0]["sha256"] = "a" * 64
+        self.assertEqual(validate_message(message), [])
+
+    def test_counterevidence_entries_are_validated(self):
+        message = valid_message()
+        message["claims"][0]["counterevidence"] = [{"file": ""}]
+        errors = validate_message(message)
+        self.assertTrue(any("counterevidence[0].file must be a nonempty string" in e for e in errors))
+
+    def test_open_question_requires_fields(self):
+        message = valid_message()
+        message["open_questions"] = [{"question": "What?"}]
+        errors = validate_message(message)
+        self.assertTrue(any(
+            "open_questions[0] missing required fields: evidence_needed, question_id" in e
+            for e in errors
+        ))
+
+
+class SchemaAgreementTests(unittest.TestCase):
+    # The stdlib validator deliberately duplicates constants from
+    # RESPONSE_SCHEMA.json so workspaces need no third-party packages;
+    # these tests fail loudly if the schema and the validator drift apart.
+    @classmethod
+    def setUpClass(cls):
+        schema_path = ROOT / "protocol" / "RESPONSE_SCHEMA.json"
+        cls.schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        cls.defs = cls.schema["$defs"]
+
+    def test_required_fields_match(self):
+        self.assertEqual(set(self.schema["required"]), REQUIRED_FIELDS)
+
+    def test_message_types_match(self):
+        self.assertEqual(set(self.schema["properties"]["message_type"]["enum"]), MESSAGE_TYPES)
+
+    def test_claim_constraints_match(self):
+        claim = self.defs["claim"]
+        self.assertEqual(set(claim["required"]), REQUIRED_CLAIM_FIELDS)
+        self.assertEqual(set(claim["properties"]["position"]["enum"]), CLAIM_POSITIONS)
+        self.assertEqual(set(claim["properties"]["materiality"]["enum"]), CLAIM_MATERIALITY)
+
+    def test_coverage_fields_match(self):
+        self.assertEqual(set(self.defs["evidence_coverage"]["required"]), REQUIRED_COVERAGE_FIELDS)
+
+    def test_open_question_fields_match(self):
+        self.assertEqual(set(self.defs["open_question"]["required"]), REQUIRED_OPEN_QUESTION_FIELDS)
+
+    def test_agreement_positions_are_valid_positions(self):
+        self.assertTrue(AGREEMENT_POSITIONS <= CLAIM_POSITIONS)
 
 
 if __name__ == "__main__":

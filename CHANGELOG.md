@@ -2,6 +2,13 @@
 
 All notable changes will be documented here.
 
+## [Unreleased]
+
+### Fixed
+
+- `validate_message` now enforces constraints that `RESPONSE_SCHEMA.json` already declared but the stdlib validator silently skipped: the `message_type`, claim `position`, and `materiality` enums; required claim fields (`statement`, `reasoning_summary`, and the rest); `file` and `authority` on every source and counterevidence entry, with a 64-hex `sha256` when present; and the required fields of each open question. A message with `message_type: "banana"` or a claim without a statement no longer passes validation.
+- New schema-agreement tests compare the validator's constants against `protocol/RESPONSE_SCHEMA.json`, so future schema edits fail the test suite until the validator matches.
+
 ## [0.4.0] - 2026-07-27
 
 Breaking schema changes from external review. The protocol identifier is now `SEEP-0.4`; it tracks the pre-1.0 release series, and `SEEP-1.0` is reserved for the first frozen schema set.
