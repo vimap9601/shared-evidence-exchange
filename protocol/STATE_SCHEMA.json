@@ -19,7 +19,7 @@
   ],
   "properties": {
     "protocol": {
-      "const": "SEEP-1.0"
+      "const": "SEEP-0.4"
     },
     "project_id": {
       "type": "string"
@@ -100,6 +100,11 @@
         "complete_with_limitations",
         "complete"
       ]
+    },
+    "max_rounds": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Optional cap on exchange messages. Exceeding it forces documented deadlock or human escalation; see FINISH_LINE.md."
     }
   }
 }

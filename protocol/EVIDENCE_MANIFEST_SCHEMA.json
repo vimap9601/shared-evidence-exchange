@@ -17,7 +17,7 @@
   ],
   "properties": {
     "protocol": {
-      "const": "SEEP-1.0"
+      "const": "SEEP-0.4"
     },
     "project_id": {
       "type": "string",
@@ -107,7 +107,8 @@
     "coverage_controls": {
       "type": "object",
       "required": [
-        "recursive_inventory_complete",
+        "local_inventory_complete",
+        "access_attested_by",
         "relevant_filename_variants_searched",
         "archives_and_nested_containers_inspected",
         "connector_limitations_documented",
@@ -115,8 +116,17 @@
         "folders_not_recursively_reviewed"
       ],
       "properties": {
-        "recursive_inventory_complete": {
-          "type": "boolean"
+        "local_inventory_complete": {
+          "type": "boolean",
+          "description": "True when the manifest generator completed a recursive walk of the evidence root on the machine where it ran. Says nothing about what any connector serves to any participant."
+        },
+        "access_attested_by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "description": "Participants who have each confirmed they can open every path in this manifest through their own access route."
         },
         "relevant_filename_variants_searched": {
           "type": "boolean"
@@ -156,9 +166,9 @@
           "is_archive",
           "archive_inspected",
           "review_status",
-          "opened",
-          "parsed",
-          "visually_inspected",
+          "opened_by",
+          "parsed_by",
+          "visually_inspected_by",
           "assigned_reviewer",
           "reviewed_by",
           "authority",
@@ -205,14 +215,27 @@
               "unsupported"
             ]
           },
-          "opened": {
-            "type": "boolean"
+          "opened_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true,
+            "description": "Participants who opened this file themselves. Coverage is per participant; an empty array means nobody has opened it."
           },
-          "parsed": {
-            "type": "boolean"
+          "parsed_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
           },
-          "visually_inspected": {
-            "type": "boolean"
+          "visually_inspected_by": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
           },
           "reviewed_by": {
             "type": "array",

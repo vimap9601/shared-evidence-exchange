@@ -1,5 +1,5 @@
 {
-  "protocol": "SEEP-1.0",
+  "protocol": "SEEP-0.4",
   "project_id": "REPLACE-ME",
   "generated_at": "REPLACE-WITH-ISO-8601",
   "root": "50_PRIMARY_EVIDENCE",
@@ -14,7 +14,8 @@
     "archive_files": []
   },
   "coverage_controls": {
-    "recursive_inventory_complete": false,
+    "local_inventory_complete": false,
+    "access_attested_by": [],
     "relevant_filename_variants_searched": false,
     "archives_and_nested_containers_inspected": false,
     "connector_limitations_documented": false,

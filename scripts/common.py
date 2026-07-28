@@ -6,12 +6,14 @@ import re
 from pathlib import Path
 from typing import Any
 
+PROTOCOL_VERSION = "SEEP-0.4"
 MESSAGE_ID_RE = re.compile(r"^EXCHANGE-(\d{4})([A-Z]?)$")
 REQUIRED_FIELDS = {
     "protocol", "project_id", "message_id", "in_reply_to", "sender",
     "recipient", "created_at", "message_type", "summary_markdown",
     "evidence_coverage", "claims", "open_questions", "required_response",
 }
+AGREEMENT_POSITIONS = {"agree", "partially_agree"}
 
 
 def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
@@ -48,8 +50,8 @@ def validate_message(message: dict[str, Any]) -> list[str]:
     if missing:
         errors.append("missing required fields: " + ", ".join(missing))
 
-    if message.get("protocol") != "SEEP-1.0":
-        errors.append("protocol must equal SEEP-1.0")
+    if message.get("protocol") != PROTOCOL_VERSION:
+        errors.append(f"protocol must equal {PROTOCOL_VERSION}")
 
     message_id = message.get("message_id")
     if not isinstance(message_id, str) or not MESSAGE_ID_RE.fullmatch(message_id):
@@ -66,20 +68,38 @@ def validate_message(message: dict[str, Any]) -> list[str]:
     if sender and recipient and sender == recipient:
         errors.append("sender and recipient must differ")
 
+    corrects = message.get("corrects_message_id")
+    if message.get("message_type") == "correction":
+        if not isinstance(corrects, str) or not MESSAGE_ID_RE.fullmatch(corrects):
+            errors.append("a correction requires corrects_message_id with a valid exchange ID")
+        elif corrects == message_id:
+            errors.append("a correction cannot correct itself")
+    elif corrects is not None:
+        errors.append("corrects_message_id is only allowed on correction messages")
+
     coverage = message.get("evidence_coverage")
     if not isinstance(coverage, dict):
         errors.append("evidence_coverage must be an object")
     else:
         required_coverage = {
-            "manifest_file", "inventory_complete", "files_total", "files_opened",
-            "files_parsed", "files_visually_inspected", "files_not_opened",
-            "folders_not_recursively_reviewed", "unsupported_file_types",
-            "archives_not_inspected", "known_connector_limitations",
-            "missing_claim_gate_satisfied",
+            "manifest_file", "reviewer", "inventory_complete", "files_total",
+            "files_opened", "files_parsed", "files_visually_inspected",
+            "files_not_opened", "folders_not_recursively_reviewed",
+            "unsupported_file_types", "archives_not_inspected",
+            "known_connector_limitations", "missing_claim_gate_satisfied",
         }
         missing_coverage = sorted(required_coverage - coverage.keys())
         if missing_coverage:
             errors.append("evidence_coverage missing fields: " + ", ".join(missing_coverage))
+        reviewer = coverage.get("reviewer")
+        if "reviewer" in coverage:
+            if not isinstance(reviewer, str) or not reviewer:
+                errors.append("evidence_coverage.reviewer must be a nonempty string")
+            elif sender and reviewer != sender:
+                errors.append(
+                    "evidence_coverage.reviewer must equal sender; "
+                    "coverage is per participant and may not be reported on another participant's behalf"
+                )
         for key in ["files_total", "files_opened", "files_parsed", "files_visually_inspected", "files_not_opened"]:
             value = coverage.get(key)
             if not isinstance(value, int) or isinstance(value, bool) or value < 0:
@@ -112,8 +132,14 @@ def validate_message(message: dict[str, Any]) -> list[str]:
                 errors.append(f"claims[{index}].confidence must be numeric")
             elif not 0 <= confidence <= 1:
                 errors.append(f"claims[{index}].confidence must be between 0 and 1")
-            if not isinstance(claim.get("sources"), list):
+            sources = claim.get("sources")
+            if not isinstance(sources, list):
                 errors.append(f"claims[{index}].sources must be an array")
+            elif claim.get("position") in AGREEMENT_POSITIONS and not sources:
+                errors.append(
+                    f"claims[{index}] position {claim['position']} requires at least one source; "
+                    "agreement without primary evidence remains unresolved"
+                )
 
     if not isinstance(message.get("open_questions"), list):
         errors.append("open_questions must be an array")

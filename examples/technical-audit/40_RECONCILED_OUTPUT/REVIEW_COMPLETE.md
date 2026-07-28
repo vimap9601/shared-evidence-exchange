@@ -6,9 +6,11 @@ The model-to-model evidence review is complete under the **human decision requir
 
 - Recursive inventory: complete
 - Files in manifest: 2
-- Files opened and parsed: 2
+- Files opened and parsed by MODEL_A: 2
+- Files opened and parsed by MODEL_B: 2
+- Access attested by: MODEL_A, MODEL_B
 - Unsupported types: none
-- Missing-claim gate: satisfied
+- Missing-claim gate: satisfied for both participants
 
 ## Agreed facts
 

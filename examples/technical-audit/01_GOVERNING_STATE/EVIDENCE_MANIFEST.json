@@ -1,5 +1,5 @@
 {
-  "protocol": "SEEP-1.0",
+  "protocol": "SEEP-0.4",
   "project_id": "DEMO-TECH-AUDIT",
   "generated_at": "2026-07-27T23:16:40.309294+00:00",
   "root": "50_PRIMARY_EVIDENCE",
@@ -18,7 +18,11 @@
     "archive_files": []
   },
   "coverage_controls": {
-    "recursive_inventory_complete": true,
+    "local_inventory_complete": true,
+    "access_attested_by": [
+      "MODEL_A",
+      "MODEL_B"
+    ],
     "relevant_filename_variants_searched": true,
     "archives_and_nested_containers_inspected": true,
     "connector_limitations_documented": true,
@@ -36,9 +40,15 @@
       "is_archive": false,
       "archive_inspected": true,
       "review_status": "reviewed",
-      "opened": true,
-      "parsed": true,
-      "visually_inspected": false,
+      "opened_by": [
+        "MODEL_A",
+        "MODEL_B"
+      ],
+      "parsed_by": [
+        "MODEL_A",
+        "MODEL_B"
+      ],
+      "visually_inspected_by": [],
       "reviewed_by": [
         "MODEL_A",
         "MODEL_B"
@@ -59,9 +69,15 @@
       "is_archive": false,
       "archive_inspected": true,
       "review_status": "reviewed",
-      "opened": true,
-      "parsed": true,
-      "visually_inspected": false,
+      "opened_by": [
+        "MODEL_A",
+        "MODEL_B"
+      ],
+      "parsed_by": [
+        "MODEL_A",
+        "MODEL_B"
+      ],
+      "visually_inspected_by": [],
       "reviewed_by": [
         "MODEL_A",
         "MODEL_B"
