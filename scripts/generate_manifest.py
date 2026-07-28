@@ -6,7 +6,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from common import sha256_file
+from common import PROTOCOL_VERSION, sha256_file
 
 ARCHIVE_EXTENSIONS = {".zip", ".7z", ".rar", ".tar", ".gz", ".tgz", ".bz2", ".xz"}
 
@@ -54,9 +54,9 @@ def generate_manifest(evidence_root: Path, project_id: str) -> dict:
             "is_archive": is_archive,
             "archive_inspected": not is_archive,
             "review_status": "unreviewed",
-            "opened": False,
-            "parsed": False,
-            "visually_inspected": False,
+            "opened_by": [],
+            "parsed_by": [],
+            "visually_inspected_by": [],
             "assigned_reviewer": None,
             "reviewed_by": [],
             "authority": "unclassified",
@@ -78,7 +78,7 @@ def generate_manifest(evidence_root: Path, project_id: str) -> dict:
     ]
 
     return {
-        "protocol": "SEEP-1.0",
+        "protocol": PROTOCOL_VERSION,
         "project_id": project_id,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "root": evidence_root.as_posix(),
@@ -93,10 +93,14 @@ def generate_manifest(evidence_root: Path, project_id: str) -> dict:
             "archive_files": archive_files,
         },
         "coverage_controls": {
-            "recursive_inventory_complete": True,
+            # The script can attest only to what it did locally. Connector
+            # behavior and per-participant access must be attested later by
+            # each participant, never pre-checked here.
+            "local_inventory_complete": True,
+            "access_attested_by": [],
             "relevant_filename_variants_searched": False,
             "archives_and_nested_containers_inspected": not archive_files,
-            "connector_limitations_documented": True,
+            "connector_limitations_documented": False,
             "known_connector_limitations": [],
             "folders_not_recursively_reviewed": [],
         },

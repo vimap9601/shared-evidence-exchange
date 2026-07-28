@@ -3,7 +3,7 @@
 1. Create a private root folder.
 2. Initialize the SEEP folder structure locally.
 3. Upload the structure and primary evidence to Drive.
-4. Verify that each model's connector can recursively discover the root folder and nested folders.
+4. Verify that each model's connector can recursively discover the root folder and nested folders. Once a model has confirmed it can open every path in the manifest, it adds its ID to `access_attested_by`; a manifest generated locally proves nothing about what Drive serves to each model.
 5. Generate the evidence manifest outside Drive or through a capable agent, then store it in `01_GOVERNING_STATE`.
 6. Test representative PDFs, images, archives, native files, and large files. Record unsupported formats and search limitations.
 7. Test whether each connector can create or upload files.

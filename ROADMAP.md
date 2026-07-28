@@ -2,6 +2,13 @@
 
 SEEP is an early public protocol. The roadmap favors boring reliability over theatrical autonomy.
 
+## Implemented in v0.4.0
+
+- Per-participant coverage, access attestation, and a per-participant missing-claim gate.
+- Correction messages with explicit targets that coexist with the one-reply rule.
+- Claim-source validation against the evidence manifest, including hash checks.
+- Source requirements for agreement verdicts.
+
 ## Implemented in v0.3.0
 
 - Recursive directory and file manifests.
@@ -13,10 +20,11 @@ SEEP is an early public protocol. The roadmap favors boring reliability over the
 ## Near term
 
 - Expand the completed example library.
-- Add stronger cross-message claim validation and automatic reopening checks.
+- Add automatic claim-reopening checks and a `validate_state.py` cross-check of state files against the message record.
 - Add a command that scaffolds a complete first exchange packet.
 - Improve Windows and no-code setup documentation.
-- Add tests for corrections, deadlocks, and human-escalation flows.
+- Add tests for deadlocks and human-escalation flows.
+- Decide whether to collapse the directional message folders into a single `10_EXCHANGE/` folder before 1.0.
 
 ## Reference implementation
 

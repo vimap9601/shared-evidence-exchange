@@ -4,7 +4,7 @@ This sanitized example demonstrates the full SEEP lifecycle using a deliberately
 
 ## Evidence ingestion
 
-The example includes a recursive manifest and a complete evidence-coverage gate before the first claim is made.
+The example includes a recursive manifest, per-participant access attestations, and a satisfied missing-claim gate for both participants before the first claim is made.
 
 ## Evidence
 
@@ -23,7 +23,8 @@ The example includes a recursive manifest and a complete evidence-coverage gate 
 From the repository root:
 
 ```bash
-python scripts/check_evidence_coverage.py examples/technical-audit/01_GOVERNING_STATE/EVIDENCE_MANIFEST.json --require-missing-claim-gate
+python scripts/check_evidence_coverage.py examples/technical-audit/01_GOVERNING_STATE/EVIDENCE_MANIFEST.json --reviewer MODEL_A --require-missing-claim-gate
+python scripts/check_evidence_coverage.py examples/technical-audit/01_GOVERNING_STATE/EVIDENCE_MANIFEST.json --reviewer MODEL_B --require-missing-claim-gate
 python scripts/validate_exchange.py examples/technical-audit
 python scripts/detect_unanswered.py examples/technical-audit
 ```

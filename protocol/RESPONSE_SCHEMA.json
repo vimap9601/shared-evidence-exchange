@@ -21,7 +21,7 @@
   ],
   "properties": {
     "protocol": {
-      "const": "SEEP-1.0"
+      "const": "SEEP-0.4"
     },
     "project_id": {
       "type": "string",
@@ -41,6 +41,11 @@
           "pattern": "^EXCHANGE-[0-9]{4}[A-Z]?$"
         }
       ]
+    },
+    "corrects_message_id": {
+      "type": "string",
+      "pattern": "^EXCHANGE-[0-9]{4}[A-Z]?$",
+      "description": "Correction messages only: the sender's own prior message being corrected. in_reply_to still points at the newest message for thread position."
     },
     "sender": {
       "type": "string",
@@ -85,6 +90,21 @@
     "evidence_coverage": {
       "$ref": "#/$defs/evidence_coverage"
     }
+  },
+  "if": {
+    "properties": {
+      "message_type": {
+        "const": "correction"
+      }
+    },
+    "required": [
+      "message_type"
+    ]
+  },
+  "then": {
+    "required": [
+      "corrects_message_id"
+    ]
   },
   "$defs": {
     "source": {
@@ -262,6 +282,7 @@
       "additionalProperties": true,
       "required": [
         "manifest_file",
+        "reviewer",
         "inventory_complete",
         "files_total",
         "files_opened",
@@ -277,6 +298,11 @@
       "properties": {
         "manifest_file": {
           "type": "string"
+        },
+        "reviewer": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The participant whose own coverage this block reports. Must equal the message sender; coverage is per participant."
         },
         "inventory_complete": {
           "type": "boolean"

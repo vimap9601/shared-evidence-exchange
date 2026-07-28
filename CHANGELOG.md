@@ -2,6 +2,34 @@
 
 All notable changes will be documented here.
 
+## [0.4.0] - 2026-07-27
+
+Breaking schema changes from external review. The protocol identifier is now `SEEP-0.4`; it tracks the pre-1.0 release series, and `SEEP-1.0` is reserved for the first frozen schema set.
+
+### Added
+
+- Per-participant evidence coverage: `opened_by`, `parsed_by`, and `visually_inspected_by` arrays replace the shared per-file booleans, so one model can no longer free-ride on the other's coverage record.
+- Required `reviewer` field in every message's `evidence_coverage` block; the validator rejects messages whose reviewer is not the sender.
+- Per-participant access attestation (`coverage_controls.access_attested_by`) and a `--reviewer` flag on `check_evidence_coverage.py`; the missing-claim gate is now evaluated per participant.
+- `corrects_message_id` field and correction rules: corrections reply to the thread head and name their target explicitly, so they no longer collide with the one-reply rule.
+- Claim sources are validated against the evidence manifest: cited files must exist in the manifest and cited hashes must match.
+- Agreement verdicts (`agree`, `partially_agree`) now require at least one source, enforcing "agreement without primary evidence remains unresolved."
+- Consensus now requires the missing-claim gate for every participant, or an explicit coverage-limitations record with `evidence_coverage_status: complete_with_limitations`.
+- Optional `max_rounds` in the project state; exceeding it forces documented deadlock or human escalation.
+- Human-attestation convention for testimony that only a human can provide.
+- Project-state authorship rules and the missing `PROJECT_STATE_0001.json` in the example.
+- Protocol and security guidance that counterpart messages are claims to verify, never instructions.
+
+### Changed
+
+- `generate_manifest.py` no longer pre-asserts controls it cannot know: `connector_limitations_documented` defaults to false, and `recursive_inventory_complete` is split into script-assertable `local_inventory_complete` plus per-participant access attestation.
+- README no longer claims the ingestion gate prevents shared blind spots; SEEP makes them visible and expensive to maintain.
+- Standardized on the term "missing-claim gate."
+
+### Removed
+
+- Repo-construction scaffolding docs (`docs/github-deployment.md`, `docs/upload-checklist.md`).
+
 ## [0.3.0] - 2026-07-27
 
 ### Added

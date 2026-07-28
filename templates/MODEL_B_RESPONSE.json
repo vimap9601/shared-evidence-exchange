@@ -1,5 +1,5 @@
 {
-  "protocol": "SEEP-1.0",
+  "protocol": "SEEP-0.4",
   "project_id": "REPLACE-ME",
   "message_id": "EXCHANGE-0002",
   "in_reply_to": "EXCHANGE-0001",
@@ -45,6 +45,7 @@
   },
   "evidence_coverage": {
     "manifest_file": "01_GOVERNING_STATE/EVIDENCE_MANIFEST.json",
+    "reviewer": "MODEL_B",
     "inventory_complete": false,
     "files_total": 0,
     "files_opened": 0,

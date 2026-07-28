@@ -1,5 +1,5 @@
 {
-  "protocol": "SEEP-1.0",
+  "protocol": "SEEP-0.4",
   "project_id": "DEMO-TECH-AUDIT",
   "state_version": 2,
   "last_message_id": "EXCHANGE-0003",

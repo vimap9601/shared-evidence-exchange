@@ -1,15 +1,15 @@
 {
   "protocol": "SEEP-0.4",
-  "project_id": "REPLACE-ME",
+  "project_id": "DEMO-TECH-AUDIT",
   "state_version": 1,
   "last_message_id": null,
   "agreed_claims": [],
   "disputed_claims": [],
   "unresolved_questions": [],
   "required_human_decisions": [],
-  "next_actor": null,
-  "status": "evidence_ingestion",
+  "next_actor": "MODEL_A",
+  "status": "peer_review_open",
   "reopened_claims": [],
   "evidence_manifest": "01_GOVERNING_STATE/EVIDENCE_MANIFEST.json",
-  "evidence_coverage_status": "not_started"
+  "evidence_coverage_status": "complete"
 }

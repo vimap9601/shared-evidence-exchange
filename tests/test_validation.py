@@ -6,18 +6,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from common import validate_message
+from common import PROTOCOL_VERSION, validate_message
 
 
 def valid_message() -> dict:
     return {
-        "protocol": "SEEP-1.0", "project_id": "TEST",
+        "protocol": PROTOCOL_VERSION, "project_id": "TEST",
         "message_id": "EXCHANGE-0001", "in_reply_to": None,
         "sender": "MODEL_A", "recipient": "MODEL_B",
         "created_at": "2026-07-27T14:00:00Z",
         "message_type": "audit_challenge", "summary_markdown": "Test",
         "evidence_coverage": {
-            "manifest_file": "EVIDENCE_MANIFEST.json", "inventory_complete": True,
+            "manifest_file": "EVIDENCE_MANIFEST.json", "reviewer": "MODEL_A",
+            "inventory_complete": True,
             "files_total": 1, "files_opened": 1, "files_parsed": 1,
             "files_visually_inspected": 0, "files_not_opened": 0,
             "folders_not_recursively_reviewed": [], "unsupported_file_types": [],
@@ -51,6 +52,45 @@ class ValidationTests(unittest.TestCase):
     def test_invalid_coverage_counts(self):
         message = valid_message(); message["evidence_coverage"]["files_not_opened"] = 1
         self.assertTrue(any("must equal files_total" in e for e in validate_message(message)))
+
+    def test_reviewer_must_match_sender(self):
+        message = valid_message()
+        message["evidence_coverage"]["reviewer"] = "MODEL_B"
+        self.assertTrue(any("reviewer must equal sender" in e for e in validate_message(message)))
+
+    def test_reviewer_is_required(self):
+        message = valid_message()
+        del message["evidence_coverage"]["reviewer"]
+        self.assertTrue(any("reviewer" in e for e in validate_message(message)))
+
+    def test_agreement_requires_sources(self):
+        message = valid_message()
+        message["message_type"] = "response"
+        message["in_reply_to"] = "EXCHANGE-0000"
+        message["claims"][0]["position"] = "agree"
+        errors = validate_message(message)
+        self.assertTrue(any("requires at least one source" in e for e in errors))
+        message["claims"][0]["sources"] = [{"file": "a.txt", "authority": "primary"}]
+        self.assertEqual(validate_message(message), [])
+
+    def test_partial_agreement_requires_sources(self):
+        message = valid_message()
+        message["claims"][0]["position"] = "partially_agree"
+        self.assertTrue(any("requires at least one source" in e for e in validate_message(message)))
+
+    def test_correction_requires_target(self):
+        message = valid_message()
+        message["message_type"] = "correction"
+        self.assertTrue(any("corrects_message_id" in e for e in validate_message(message)))
+        message["corrects_message_id"] = message["message_id"]
+        self.assertTrue(any("cannot correct itself" in e for e in validate_message(message)))
+        message["message_id"] = "EXCHANGE-0004"
+        self.assertEqual(validate_message(message), [])
+
+    def test_corrects_field_restricted_to_corrections(self):
+        message = valid_message()
+        message["corrects_message_id"] = "EXCHANGE-0000"
+        self.assertTrue(any("only allowed on correction" in e for e in validate_message(message)))
 
 
 if __name__ == "__main__":
