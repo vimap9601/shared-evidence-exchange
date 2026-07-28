@@ -48,32 +48,33 @@ specification. See the [roadmap](ROADMAP.md).
 ## The 30-second version
 
 1. Put the governing documents and evidence in a shared folder.
-2. Model A writes a structured challenge as `EXCHANGE-0001`.
-3. Model B independently checks the evidence and writes `EXCHANGE-0002`.
-4. The models continue with numbered, append-only files.
-5. Every message reports what evidence was actually opened, parsed, and visually inspected.
-6. The exchange ends with consensus, a documented deadlock, or a clearly assigned human decision.
+2. Each model inventories the evidence and reports what it actually opened, parsed, and visually inspected — its own coverage, not the other model's.
+3. Every material claim is written down with a stable ID and a portable citation: the exact file, hash, page, or source lines it rests on.
+4. Claims accumulate in an append-only record; earlier entries are never overwritten.
+5. A claim only counts as established when it is backed by primary evidence that resolves — a cited file that exists, a hash that matches. A definitive "this is missing" is not allowed until coverage is complete.
+6. What the evidence cannot settle is escalated to a human, explicitly, rather than smoothed over.
 
-The human may still announce that a new file exists, but no longer has to summarize or relay the actual argument. Before the debate begins, SEEP recursively inventories the evidence and requires each model to attest and report its own coverage, so overlooking a folder leaves a visible trail instead of a silent shared assumption.
+The human no longer has to summarize or relay the argument by hand; the record carries it. And because coverage is per participant, overlooking a folder leaves a visible trail instead of becoming a silent shared assumption.
 
-Nothing file-based can *prevent* shared blind spots, because every control is ultimately self-reported by the same class of system being audited. SEEP's honest ceiling is making shared blind spots visible and expensive to maintain — that is the claim this repository stands behind.
+Nothing file-based can *prevent* shared blind spots — every control is ultimately self-reported by the same class of system being audited. SEEP's honest floor is making the evidence behind every claim explicit and checkable, and making blind spots visible and expensive to maintain. That is the claim this repository stands behind.
 
 ## Why this exists
 
 Cross-model review is useful, but ordinary copy-paste collaboration behaves like a telephone game. Citations disappear, caveats shrink, context windows fill up, and one model cannot usually resolve another platform's internal source tokens.
 
-SEEP externalizes the important state:
+Worse, agreement between models is a weak signal. Two models drawn from overlapping training data tend to agree on the *same* wrong things, so "they concurred" is not evidence that a claim is right. What actually distinguishes a right claim from a plausible wrong one is whether it is anchored to something outside the models — a source that resolves, a test that runs.
 
-- shared primary evidence;
-- append-only numbered messages;
-- machine-readable claims and verdicts;
-- portable citations;
-- explicit evidence authority;
+So SEEP externalizes the evidence, not the opinions:
+
+- shared primary evidence that outranks any model's summary of it;
+- portable citations — exact file, hash, page, or source lines — that survive provider boundaries;
+- per-participant coverage of what was actually reviewed;
+- machine-readable claims with stable IDs;
+- an append-only record with explicit evidence authority;
 - context snapshots for fresh chats;
-- completion and escalation rules;
-- optional scheduled-task or API automation.
+- escalation rules for what evidence cannot decide.
 
-The approach grew out of a real multi-model audit where two assistants reviewed the same project record through a shared cloud folder. The useful invention was not a secret AI language. It was a disciplined mailbox.
+The approach grew out of a real multi-model audit where two assistants reviewed the same project record through a shared cloud folder. The useful invention was not a secret AI language, and not a debating chamber. It was the discipline of tying every claim to evidence anyone can re-check.
 
 ## The lesson that changed the protocol
 
