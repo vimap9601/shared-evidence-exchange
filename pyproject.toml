@@ -1,6 +1,6 @@
 [project]
 name = "shared-evidence-exchange"
-version = "0.4.0"
+version = "0.4.1"
 description = "Provider-independent, append-only AI peer-review exchange protocol"
 readme = "README.md"
 requires-python = ">=3.10"

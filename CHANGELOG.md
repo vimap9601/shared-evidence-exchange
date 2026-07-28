@@ -4,6 +4,17 @@ All notable changes will be documented here.
 
 ## [Unreleased]
 
+### Added
+
+- `validate_state.py`: standard-library validation of `PROJECT_STATE_*.json` files, cross-checked against the message record. Checks include filename/`state_version` agreement, `last_message_id` and every referenced claim or open question existing on record, a consistent `project_id`, an existing `evidence_manifest` path, and the finish-line rules: reaching `max_rounds` with an open status is an error, `human_decision_required` needs at least one recorded decision, and `complete` requires a `REVIEW_COMPLETE.md` marker and complete (or explicitly limited) coverage.
+- Schema-agreement tests for `STATE_SCHEMA.json`, matching the existing message-schema pattern: a future schema edit fails the suite until the state validator matches.
+- `scaffold_message.py`: scaffolds the next exchange message — the first challenge in a fresh workspace, or a reply to the newest unanswered message with the sender flipped, the message ID, reply target, project ID, and coverage reviewer pre-filled. Refuses to scaffold on a record containing unreadable message files, since the pending reply may be hiding in one.
+- Deadlock and human-escalation flow tests covering the `max_rounds` cap, documented-deadlock and escalation closes, the completion marker, and escalation messages requiring no reply.
+- CI now validates the example's state files alongside its exchange.
+- Dependabot updates for GitHub Actions.
+
+## [0.4.1] - 2026-07-28
+
 ### Fixed
 
 - `validate_message` now enforces constraints that `RESPONSE_SCHEMA.json` already declared but the stdlib validator silently skipped: the `message_type`, claim `position`, and `materiality` enums; required claim fields (`statement`, `reasoning_summary`, and the rest); `file` and `authority` on every source and counterevidence entry, with a 64-hex `sha256` when present; and the required fields of each open question. A message with `message_type: "banana"` or a claim without a statement no longer passes validation.
